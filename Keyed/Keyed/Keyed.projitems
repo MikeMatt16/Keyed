@@ -28,5 +28,6 @@
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceDB-3.0\AceDB-3.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceHook-3.0\AceHook-3.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\References.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\Thankyou.txt" />
   </ItemGroup>
 </Project>

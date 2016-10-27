@@ -70,5 +70,17 @@ namespace Keyed_Plus.Properties {
                 this["passwordLength"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string KeyedDBPath {
+            get {
+                return ((string)(this["KeyedDBPath"]));
+            }
+            set {
+                this["KeyedDBPath"] = value;
+            }
+        }
     }
 }

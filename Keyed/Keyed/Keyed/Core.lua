@@ -3,16 +3,18 @@ Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0
 
 -- Default Profile
 local defaults = {
-}
-
-local entry = {
-	time = 0,
-	keystones = {}
+	factionrealm = {
+		["*"] = {
+			time = 0,
+			keystones = {}
+		}
+	}
 }
 
 local KeystoneId = 138019
-local prefix = "KEYED_BETA"
+local prefix = "KEYED_ALPHA"
 local KeyedName = "|cffd6266cKeyed|r"
+local keystoneRequest = "keystones"
 
 function Keyed:OnInitialize()
 	-- Register "/keyed" command
@@ -33,7 +35,8 @@ end
 function Keyed:Options(input)
 	-- Check...
 	if self:isempty(input) then
-		KeyedInterface:Show()
+		-- KeyedInterface:Show()
+		print(KeyedName, "Currently the GUI is disabled :(\r\n    However, you can type \"/weighted print db\" to view keystones in database.")
 	else
 		local Arguments = self:SplitString(input, ' ')
 		if Arguments[1] == "get" then
@@ -47,7 +50,7 @@ function Keyed:Options(input)
 				print(KeyedName, "Keystones in database:")
 				for playerName, keystones in pairs(self.db.factionrealm) do
 					for i = 1, #keystones.keystones do
-						print(KeyedName, playerName, i, keystones.keystones[i])
+						print(KeyedName, playerName, "(" .. i .. "/" .. #keystones.keystones .. ")", keystones.keystones[i])
 					end
 				end
 			end
@@ -61,70 +64,69 @@ end
 
 function Keyed:BroadcastKeystoneRequest()
 	print(KeyedName, "Getting keystones from guild...")
-	Keyed:SendCommMessage(prefix, "request;keystones", "GUILD")
+	Keyed:SendCommMessage(prefix, "request;" .. keystoneRequest, "GUILD")
 end
 
 function Keyed:SendKeystoneRequest(playerName)
-	if playerName then Keyed:SendCommMessage(prefix, "request;keystones", "WHISPER", playerName) end
+	if playerName then Keyed:SendCommMessage(prefix, "request;" .. keystoneRequest, "WHISPER", playerName) end
 end
 
 function Keyed:OnCommReceived (prefix, message, channel, sender)
-	-- Create database entry?
-	self.db.factionrealm[sender] = self.db.factionrealm[sender] or {
-		time = 0,
-		keystones = {}
-	}
-
 	-- Prepare
 	local name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice
-	local Arguments = self:SplitString(message, ';')
-	local Keystones = self:FindKeystones()
-	local response = "keystones;" .. tostring(GetTime()) .. ';'
+	local arguments = self:SplitString(message, ';')
 	local entry = {
 		time = 0,
 		keystones = {}
 	}
 
 	-- Handle...
-	if Arguments[1] == "request" then
-		if Arguments[2] == "keystones" then
-			for i = 1, #Keystones do response = response .. Keystones[i] .. ";" end
-			if #Keystones == 0 then
-				response = "keystones"
-			end
-			self:SendResponse(sender, response)
+	if arguments[1] == "request" then
+		if arguments[2] == keystoneRequest then
 			self:SendEntries(sender)
+			self:SendKeystones(sender)
 		end
-	elseif Arguments[1] == "keystones" then
-		entry.time = tonumber(Arguments[2])
+	elseif arguments[1] == "keystones" then
+		entry.time = tonumber(arguments[2])
 		entry.keystones= {}
-		for i = 3, #Arguments do
-			if not self:isempty(Arguments[i]) then
-				name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(Arguments[i])
+		for i = 3, #arguments do
+			if not self:isempty(arguments[i]) then
+				name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(arguments[i])
 				if name and link then table.insert(entry.keystones, link) end
 			end
 		end
 
 		-- Wipe and add...
-		self.db.factionrealm[sender].time = self.db.factionrealm[sender].time or 0
-		self.db.factionrealm[sender].keystones = self.db.factionrealm[sender].keystones or {}
-		if self.db.factionrealm[sender].time <= entry.time then
+		if self.db.factionrealm[sender].time < entry.time then
 			table.wipe(self.db.factionrealm[sender])
 			print(KeyedName, "Updating", sender, "database entry...")
-			self.db.factionrealm[sender] = entry
+			self.db.factionrealm[sender].time = entry.time
+			self.db.factionrealm[sender].keystones = {}
+			for i = 1, #entry.keystones do
+				table.insert(self.db.factionrealm[sender].keystones, entry.keystones[i])
+			end
 		end
 	end
 end
 
 function Keyed:SendEntries(target)
 	-- Prepare
-	local message = "keystones;" 
+	local message = keystoneRequest .. ";" 
 	for playerName, entry in pairs(self.db.factionrealm) do
 		message = message .. tostring(entry.time) .. ";"
 		for i = 1, #entry.keystones do message = message .. entry.keystones[i] .. ";" end
 		self:SendResponse(target, message)
-		print(self, target, message)
 	end
+end
+
+function Keyed:SendKeystones(target)
+	-- Prepare
+	local message = keystoneRequest .. ";" .. tostring(GetServerTime()) .. ";"
+	local keystones = self:FindKeystones()
+	for i = 1, #keystones do
+		message = message .. keystones[i] .. ";"
+	end
+	self:SendResponse(target, message)
 end
 
 function Keyed:FindKeystones()
