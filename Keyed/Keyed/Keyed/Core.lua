@@ -15,6 +15,7 @@ local KeystoneId = 138019
 local prefix = "KEYED_ALPHA"
 local KeyedName = "|cffd6266cKeyed|r"
 local keystoneRequest = "keystones"
+local playerKeystoneRequest = "playerkeystone"
 
 function Keyed:OnInitialize()
 	-- Register "/keyed" command
@@ -77,19 +78,20 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 	local arguments = self:SplitString(message, ';')
 	local keystones = {}
 	local time = 0
-	
+	local name = ""
 	-- Handle...
 	if arguments[1] == "request" then
 		if arguments[2] == keystoneRequest then
 			self:SendEntries(sender)
 			self:SendKeystones(sender)
 		end
-	elseif arguments[1] == "keystones" then
-		time = tonumber(arguments[2])
-		for i = 3, #arguments do
+	elseif arguments[1] == playerKeystoneRequest then
+		name = arguments[2]
+		time = tonumber(arguments[3])
+		for i = 4, #arguments do
 			if not self:isempty(arguments[i]) then
 				name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(arguments[i])
-				if name and link then table.insert(keystones, link) end
+				if name and link then table.insert(keystones, link); print(self, sender, link) end
 			end
 		end
 
@@ -100,6 +102,27 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 			self.db.factionrealm[sender].time = time
 			self.db.factionrealm[sender].keystones = {}
 			for i = 1, #keystones do
+				print(self, sender, keystones[i])
+				table.insert(self.db.factionrealm[sender].keystones, keystones[i])
+			end
+		end
+	elseif arguments[1] == keystoneRequest then
+		time = tonumber(arguments[2])
+		for i = 3, #arguments do
+			if not self:isempty(arguments[i]) then
+				name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(arguments[i])
+				if name and link then table.insert(keystones, link); print(self, sender, link) end
+			end
+		end
+
+		-- Wipe and add...
+		if self.db.factionrealm[sender].time < time then
+			table.wipe(self.db.factionrealm[sender])
+			print(KeyedName, "Updating", sender, "database entry...")
+			self.db.factionrealm[sender].time = time
+			self.db.factionrealm[sender].keystones = {}
+			for i = 1, #keystones do
+				print(self, sender, keystones[i])
 				table.insert(self.db.factionrealm[sender].keystones, keystones[i])
 			end
 		end
@@ -108,10 +131,11 @@ end
 
 function Keyed:SendEntries(target)
 	-- Prepare
-	local message = keystoneRequest .. ";" 
+	local name, realm = UnitName("player")
+	local message = ""
 	for playerName, entry in pairs(self.db.factionrealm) do
-		if playerName ~= UnitName('player') then
-			message = message .. tostring(entry.time) .. ";"
+		if playerName ~= name then
+			message = playerKeystoneRequest .. ";"  .. playerName .. ";" .. tostring(entry.time) .. ";"
 			for i = 1, #entry.keystones do message = message .. entry.keystones[i] .. ";" end
 			self:SendResponse(target, message)
 		end
