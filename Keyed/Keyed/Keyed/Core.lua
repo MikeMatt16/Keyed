@@ -78,7 +78,7 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 	local arguments = self:SplitString(message, ';')
 	local keystones = {}
 	local time = 0
-	local name = ""
+	local player = ""
 	-- Handle...
 	if arguments[1] == "request" then
 		if arguments[2] == keystoneRequest then
@@ -86,24 +86,24 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 			self:SendKeystones(sender)
 		end
 	elseif arguments[1] == playerKeystoneRequest then
-		name = arguments[2]
+		player = arguments[2]
 		time = tonumber(arguments[3])
 		for i = 4, #arguments do
 			if not self:isempty(arguments[i]) then
 				name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(arguments[i])
-				if name and link then table.insert(keystones, link); print(self, sender, link) end
+				if name and link then table.insert(keystones, link) end
 			end
 		end
 
 		-- Wipe and add...
-		if self.db.factionrealm[sender].time < time then
-			table.wipe(self.db.factionrealm[sender])
+		if self.db.factionrealm[player].time < time then
+			table.wipe(self.db.factionrealm[player])
 			print(KeyedName, "Updating", sender, "database entry...")
-			self.db.factionrealm[sender].time = time
-			self.db.factionrealm[sender].keystones = {}
+			self.db.factionrealm[player].time = time
+			self.db.factionrealm[player].keystones = {}
 			for i = 1, #keystones do
-				print(self, sender, keystones[i])
-				table.insert(self.db.factionrealm[sender].keystones, keystones[i])
+				print(self, sender, player, keystones[i])
+				table.insert(self.db.factionrealm[player].keystones, keystones[i])
 			end
 		end
 	elseif arguments[1] == keystoneRequest then
@@ -111,7 +111,7 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 		for i = 3, #arguments do
 			if not self:isempty(arguments[i]) then
 				name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(arguments[i])
-				if name and link then table.insert(keystones, link); print(self, sender, link) end
+				if name and link then table.insert(keystones, link) end
 			end
 		end
 
