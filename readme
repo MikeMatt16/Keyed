@@ -1,0 +1,10 @@
+Keyed is an Addon for World of Warcraft. 
+It allows you to gather information about players in your guild, particularily what Mythic+ Keystones are in their inventory.
+Members of the guild are to have this Addon installed, and the Addon will poll data when asked to. Information is shared
+across the guild, so data will mostly stay in sync.
+
+As far as this repo goes, there are 2 main Visual Studio projects: Keyed and Keyed Plus.
+Keyed is a "C# Shared Project" type for simply containing the Addon code. Keyed Plus is a soon to-be desktop application
+that allows you to view the guild's keystones and sychronize them with a web-server.
+
+Add more to this readme later...
