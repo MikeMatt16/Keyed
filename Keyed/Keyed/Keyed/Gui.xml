@@ -1,0 +1,91 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+    http://wowprogramming.com/FrameXML/UI.xsd">
+  <Frame name="KeyedInterface" parent="UIParent" frameStrata="MEDIUM" enableKeyboard ="true" enableMouse="true" hidden="true" movable="true">
+    <Size x="280" y="540" />
+    <Anchors>
+      <Anchor point="TOP" />
+    </Anchors>
+    <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+      <BackgroundInsets>
+        <AbsInset left="11" right="12" top="12" bottom="11"/>
+      </BackgroundInsets>
+      <TileSize>
+        <AbsValue val="32"/>
+      </TileSize>
+      <EdgeSize>
+        <AbsValue val="32"/>
+      </EdgeSize>
+    </Backdrop>
+    <Layers>
+      <Layer level="ARTWORK">
+        <Texture name="GameMenuFrameHeader" file="Interface\DialogFrame\UI-DialogBox-Header">
+          <Size x="256" y="64"/>
+          <Anchors>
+            <Anchor point="TOP" x="0" y="12"/>
+          </Anchors>
+        </Texture>
+        <FontString inherits="GameFontNormal" text="|cffd6266cKeyed|r">
+          <Anchors>
+            <Anchor point="TOP" relativeTo="$parent" x="0" y="-2"/>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    <Frames>
+      <ScrollFrame name="$parent_PlayerList" inherits="FauxScrollFrameTemplate" >
+        <Anchors>
+          <Anchor point="TOP" x="0" y="-28" />
+        </Anchors>
+        <Size x="240" y ="466" />
+        <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="false">
+          <BackgroundInsets>
+            <AbsInset left="11" right="12" top="12" bottom="11"/>
+          </BackgroundInsets>
+          <TileSize>
+            <AbsValue val="32"/>
+          </TileSize>
+          <EdgeSize>
+            <AbsValue val="32"/>
+          </EdgeSize>
+        </Backdrop>
+      </ScrollFrame>
+      <Button name="$parent_Request" inherits="UIPanelButtonTemplate" text="Get Keystones...">
+        <Size x="120" y="24" />
+        <Anchors>
+          <Anchor point="BOTTOMLEFT" x="18" y="18" />
+        </Anchors>
+        <Scripts>
+          <OnClick>Keyed:BroadcastKeystoneRequest()</OnClick>
+        </Scripts>
+        <ButtonText name="Close" />
+      </Button>
+      <Button name="$parent_Close" inherits="UIPanelButtonTemplate" text="Close">
+        <Size x="120" y="24" />
+        <Anchors>
+          <Anchor point="BOTTOMRIGHT" x="-18" y="18" />
+        </Anchors>
+        <Scripts>
+          <OnClick>KeyedInterface:Hide()</OnClick>
+        </Scripts>
+        <ButtonText name="Close" />
+      </Button>
+    </Frames>
+    <Scripts>
+      <OnDragStart>self:StartMoving()</OnDragStart>
+      <OnDragStop>self:StopMovingOrSizing()</OnDragStop>
+      <OnEscapePressed>self:Hide()</OnEscapePressed>
+      <OnShow>self:LoadList()</OnShow>
+    </Scripts>
+  </Frame>
+
+  <Frame name="KeyedInterfacePlayerEntryTemplate" parent="KeyedInterface_PlayerList" virtual="true">
+    <Size x="240" y="24" />
+    <Backdrop bgFile="Interface\Common\ShadowOverlay-Left" tile="false">
+      <BackgroundInsets>
+        <AbsInset top="0" bottom="0" left="0" right="0"/>
+      </BackgroundInsets>
+    </Backdrop>
+  </Frame>
+  
+	<Script file="Gui.lua" />
+</Ui>

@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>3ac2c278-49cd-4c62-a655-7fc42162e933</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Keyed</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Core.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Gui.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Keyed.toc" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceAddon-3.0\AceAddon-3.0.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceComm-3.0\AceComm-3.0.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceComm-3.0\ChatThrottleLib.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceConsole-3.0\AceConsole-3.0.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceDB-3.0\AceDB-3.0.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceHook-3.0\AceHook-3.0.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibStub\LibStub.lua" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\Gui.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceAddon-3.0\AceAddon-3.0.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceComm-3.0\AceComm-3.0.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceConsole-3.0\AceConsole-3.0.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceDB-3.0\AceDB-3.0.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceHook-3.0\AceHook-3.0.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\References.xml" />
+  </ItemGroup>
+</Project>
