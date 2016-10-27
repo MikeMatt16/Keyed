@@ -75,11 +75,9 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 	-- Prepare
 	local name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice
 	local arguments = self:SplitString(message, ';')
-	local entry = {
-		time = 0,
-		keystones = {}
-	}
-
+	local keystones = {}
+	local time = 0
+	
 	-- Handle...
 	if arguments[1] == "request" then
 		if arguments[2] == keystoneRequest then
@@ -87,23 +85,22 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 			self:SendKeystones(sender)
 		end
 	elseif arguments[1] == "keystones" then
-		entry.time = tonumber(arguments[2])
-		entry.keystones= {}
+		time = tonumber(arguments[2])
 		for i = 3, #arguments do
 			if not self:isempty(arguments[i]) then
 				name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(arguments[i])
-				if name and link then table.insert(entry.keystones, link) end
+				if name and link then table.insert(keystones, link) end
 			end
 		end
 
 		-- Wipe and add...
-		if self.db.factionrealm[sender].time < entry.time then
+		if self.db.factionrealm[sender].time < time then
 			table.wipe(self.db.factionrealm[sender])
 			print(KeyedName, "Updating", sender, "database entry...")
-			self.db.factionrealm[sender].time = entry.time
+			self.db.factionrealm[sender].time = time
 			self.db.factionrealm[sender].keystones = {}
-			for i = 1, #entry.keystones do
-				table.insert(self.db.factionrealm[sender].keystones, entry.keystones[i])
+			for i = 1, #keystones do
+				table.insert(self.db.factionrealm[sender].keystones, keystones[i])
 			end
 		end
 	end
@@ -113,9 +110,11 @@ function Keyed:SendEntries(target)
 	-- Prepare
 	local message = keystoneRequest .. ";" 
 	for playerName, entry in pairs(self.db.factionrealm) do
-		message = message .. tostring(entry.time) .. ";"
-		for i = 1, #entry.keystones do message = message .. entry.keystones[i] .. ";" end
-		self:SendResponse(target, message)
+		if playerName ~= UnitName('player') then
+			message = message .. tostring(entry.time) .. ";"
+			for i = 1, #entry.keystones do message = message .. entry.keystones[i] .. ";" end
+			self:SendResponse(target, message)
+		end
 	end
 end
 
