@@ -16,7 +16,7 @@ local defaults = {
 }
 
 local KeystoneId = 138019
-local prefix = "KEYED"
+local prefix = "KEYED_11"
 local KeyedName = "|cffd6266cKeyed|r"
 local keystoneRequest = "keystones"
 local playerKeystoneRequest = "playerkeystone"
