@@ -28,7 +28,7 @@ function Keyed:OnInitialize()
 	KeyedFrame:RegisterForDrag("LeftButton")
 
 	-- Load Database
-	self.db = LibStub("AceDB-3.0"):New("KeyedDB", defaults)
+	self.db = LibStub("AceDB-3.0"):New("Keyedv2DB", defaults)
 	
 	-- Loop
 	for name, info in pairs(Keyed.db.factionrealm) do
@@ -63,7 +63,16 @@ function Keyed:Options(input)
 					for i = 1, #keystones.keystones do
 						print(KeyedName, playerName, "(" .. i .. "/" .. #keystones.keystones .. ")", keystones.keystones[i])
 					end
-				end
+			end
+		elseif Arguments[1] == "clear" then
+			if Arguments[2] == "db" or Arguments[2] == "database" then
+				table.wipe(self.db.factionrealm)
+				self.db.factionrealm = defaults.factionrealm
+				print(KeyedName, "Wiped database...")
+			else
+				self.db.factionrealm[Arguments[2]] = nil
+				print(KeyedName, "Wiped", Arguments[2])
+			end
 		elseif Arguments[1] == "test" then
 			print(KeyedName, "Test Scroll Frame!")
 
