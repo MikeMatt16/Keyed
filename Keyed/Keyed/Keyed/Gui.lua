@@ -9,6 +9,9 @@ function KeyedFrame_OnLoad (self)
 		button:SetPoint ("TOP", _G["KeystoneFrameButton" .. (i - 1)], "BOTTOM")
 		button:SetID (i)
 	end
+
+	-- Get All...
+	Keyed:BroadcastKeystoneRequest()
 end
 
 function KeyedFrameKeystoneList_Update (self)

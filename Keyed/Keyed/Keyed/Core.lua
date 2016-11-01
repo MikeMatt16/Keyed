@@ -5,7 +5,6 @@ Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0
 local defaults = {
 	profile = {
 		MinimapPos = 45,
-		minimapButton = true
 	},
 	factionrealm = {
 		["*"] = {
@@ -17,7 +16,7 @@ local defaults = {
 }
 
 local KeystoneId = 138019
-local prefix = "KEYED_ALPHA"
+local prefix = "KEYED"
 local KeyedName = "|cffd6266cKeyed|r"
 local keystoneRequest = "keystones"
 local playerKeystoneRequest = "playerkeystone"
@@ -30,12 +29,7 @@ function Keyed:OnInitialize()
 
 	-- Load Database
 	self.db = LibStub("AceDB-3.0"):New("KeyedDB", defaults)
-
-	-- Show Minimap Button?
-	if self.db.profile.KeyedMinimapButton then
-		KeyedMinimapButton:Show()
-	end
-
+	
 	-- Loop
 	for name, info in pairs(Keyed.db.factionrealm) do
 		if self:isempty(info.name) then
@@ -55,7 +49,6 @@ function Keyed:Options(input)
 	if self:isempty(input) then
 		KeyedFrameKeystoneList_Update(KeyedFrameKeystoneList)
 		KeyedFrame:Show()
-	-- print(KeyedName, "Currently the GUI is disabled :(\r\n    However, you can type \"/weighted print db\" to view keystones in database.")
 	else
 		local Arguments = self:SplitString(input, ' ')
 		if Arguments[1] == "get" then
@@ -166,7 +159,7 @@ function Keyed:SendResponse(playerName, response)
 end
 
 function Keyed:BroadcastKeystoneRequest()
-	print(KeyedName, "Getting keystones from guild...")
+	print(KeyedName, "Updating keystone database...")
 	Keyed:SendCommMessage(prefix, "request;" .. keystoneRequest, "GUILD")
 end
 
@@ -200,7 +193,6 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 		-- Wipe and add...
 		if self.db.factionrealm[player].time < time then
 			table.wipe(self.db.factionrealm[player])
-			print(KeyedName, "Updating", sender, "database entry...")
 			self.db.factionrealm[player].time = time
 			self.db.factionrealm[player].keystones = {}
 			for i = 1, #keystones do
@@ -218,7 +210,6 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 
 		-- Wipe and add...
 		if self.db.factionrealm[sender].time < time then
-			print(KeyedName, "Updating", sender, "database entry...")
 			self.db.factionrealm[sender].time = time
 			self.db.factionrealm[sender].name = sender
 			table.wipe(self.db.factionrealm[sender].keystones)
