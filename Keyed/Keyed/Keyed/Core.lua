@@ -29,13 +29,6 @@ function Keyed:OnInitialize()
 
 	-- Load Database
 	self.db = LibStub("AceDB-3.0"):New("Keyedv2DB", defaults)
-	
-	-- Loop
-	for name, info in pairs(Keyed.db.factionrealm) do
-		if self:isempty(info.name) then
-			Keyed.db.factionrealm[name].name = name
-		end
-	end
 end
 
 function Keyed:OnEnable()
@@ -203,6 +196,7 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 		if self.db.factionrealm[player].time < time then
 			table.wipe(self.db.factionrealm[player])
 			self.db.factionrealm[player].time = time
+			self.db.factionrealm[player].name = player
 			self.db.factionrealm[player].keystones = {}
 			for i = 1, #keystones do
 				table.insert(self.db.factionrealm[player].keystones, keystones[i])
