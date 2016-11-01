@@ -63,6 +63,7 @@ function Keyed:Options(input)
 				table.wipe(self.db.factionrealm)
 				self.db.factionrealm = defaults.factionrealm
 				print(KeyedName, "Wiped database...")
+				print("  Please reload your UI to continue...")
 			else
 				self.db.factionrealm[Arguments[2]] = nil
 				print(KeyedName, "Wiped", Arguments[2])
