@@ -1,9 +1,133 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
     http://wowprogramming.com/FrameXML/UI.xsd">
-  <Frame name="KeyedInterface" parent="UIParent" frameStrata="MEDIUM" enableKeyboard ="true" enableMouse="true" hidden="true" movable="true">
-    <Size x="280" y="540" />
+  <Script file="Gui.lua" />
+  
+  <Button name="KeyedMinimapButton" parent="Minimap" enableMouse="true" movable="true" hidden="true">
+    <Size>
+      <AbsDimension x="33" y="33"/>
+    </Size>
     <Anchors>
-      <Anchor point="TOP" />
+      <Anchor point="TOPLEFT"/>
+    </Anchors>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="KeyedMinimapButtonIcon" file="Interface\Icons\INV_Relics_Hourglass">
+          <Size>
+            <AbsDimension x="21" y="21"/>
+          </Size>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset>
+                <AbsDimension x="5" y="-4"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </Texture>
+      </Layer>
+      <Layer level="OVERLAY">
+        <Texture file="Interface\Minimap\MiniMap-TrackingBorder">
+          <Size>
+            <AbsDimension x="56" y="56"/>
+          </Size>
+          <Anchors>
+            <Anchor point="TOPLEFT"/>
+          </Anchors>
+        </Texture>
+      </Layer>
+    </Layers>
+    <Frames>
+      <Frame name="KeyedMinimapButtonDraggingFrame" hidden="true">
+        <Scripts>
+          <OnUpdate>
+            KeyedMinimapButtonDraggingFrameOnUpdate()
+          </OnUpdate>
+        </Scripts>
+      </Frame>
+    </Frames>
+    <HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
+    <Scripts>
+      <OnLoad>
+        self:RegisterForClicks("LeftButtonUp","RightButtonUp")
+        self:RegisterForDrag("LeftButton","RightButton")
+      </OnLoad>
+      <OnDragStart>
+        self:LockHighlight()
+        KeyedMinimapButtonDraggingFrame:Show()
+      </OnDragStart>
+      <OnDragStop>
+        self:UnlockHighlight()
+        KeyedMinimapButtonDraggingFrame:Hide()
+      </OnDragStop>
+      <OnClick>
+        KeyedMinimapButtonOnClick() -- do your thing in here, arg1 is mouse button clicked
+      </OnClick>
+    </Scripts>
+  </Button>
+  
+  <Button name="KeystoneButtonTemplate" virtual="true">
+    <Size x="240" y="24" />
+    <Layers>
+      <Layer level="BORDER">
+        <FontString name="$parentName" inherits="GameFontNormalSmall" justifyH="LEFT" >
+          <Size x="120" y="14"/>
+          <Anchors>
+            <Anchor point="TOPLEFT" x="14" y="-8"/>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    <Frames>
+      <Button name="$parentKeystone" inherits="KeystoneItemTemplate" hidden="true">
+        <Anchors>
+          <Anchor point="RIGHT" relativeTo="$parent" x="0" y="-2"/>
+        </Anchors>
+      </Button>
+    </Frames>
+    <HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD">
+      <Size x="240" y="24" />
+      <Anchors>
+        <Anchor point="TOP" x="16" y="-2"/>
+      </Anchors>
+    </HighlightTexture>
+  </Button>
+
+  <Button name="KeystoneItemTemplate" virtual="true">
+    <Size x="20" y="20" />
+    <Layers>
+      <Layer level="ARTWORK">
+        <Texture name="$parentIcon" file="Interface\Icons\INV_Relics_Hourglass">
+          <Size x="20" y="20" />
+          <Anchors>
+            <Anchor point="CENTER"/>
+          </Anchors>
+        </Texture>
+      </Layer>
+    </Layers>
+    <Scripts>
+      <OnEnter>
+        if self.link then
+          KeystoneButton_OnEnter(self, self.link)
+        end
+      </OnEnter>
+      <OnLeave>
+        if self.link then
+          GameTooltip:Hide()
+        end
+      </OnLeave>
+      <OnClick>
+        if self.link then
+          ChatFrame1EditBox:Show()
+          ChatFrame1EditBox:SetFocus()
+          ChatFrame1EditBox:Insert(self.link)
+        end
+      </OnClick>
+    </Scripts>
+  </Button>
+  
+  <Frame name="KeyedFrame" parent="UIParent" frameStrata="MEDIUM" enableKeyboard ="true" enableMouse="true" hidden="true" movable="true">
+    <Size x="280" y="460" />
+    <Anchors>
+      <Anchor point="CENTER" />
     </Anchors>
     <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
       <BackgroundInsets>
@@ -24,32 +148,16 @@
             <Anchor point="TOP" x="0" y="12"/>
           </Anchors>
         </Texture>
+        
         <FontString inherits="GameFontNormal" text="|cffd6266cKeyed|r">
           <Anchors>
-            <Anchor point="TOP" relativeTo="$parent" x="0" y="-2"/>
+            <Anchor point="TOP" relativeTo="$parent" x="0" y="-3"/>
           </Anchors>
         </FontString>
       </Layer>
     </Layers>
     <Frames>
-      <ScrollFrame name="$parent_PlayerList" inherits="FauxScrollFrameTemplate" >
-        <Anchors>
-          <Anchor point="TOP" x="0" y="-28" />
-        </Anchors>
-        <Size x="240" y ="466" />
-        <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="false">
-          <BackgroundInsets>
-            <AbsInset left="11" right="12" top="12" bottom="11"/>
-          </BackgroundInsets>
-          <TileSize>
-            <AbsValue val="32"/>
-          </TileSize>
-          <EdgeSize>
-            <AbsValue val="32"/>
-          </EdgeSize>
-        </Backdrop>
-      </ScrollFrame>
-      <Button name="$parent_Request" inherits="UIPanelButtonTemplate" text="Get Keystones...">
+      <Button name="KeyedFrameRequest" inherits="UIPanelButtonTemplate" text="Get Keystones...">
         <Size x="120" y="24" />
         <Anchors>
           <Anchor point="BOTTOMLEFT" x="18" y="18" />
@@ -59,33 +167,44 @@
         </Scripts>
         <ButtonText name="Close" />
       </Button>
-      <Button name="$parent_Close" inherits="UIPanelButtonTemplate" text="Close">
+      
+      <Button name="KeyedFrameClose" inherits="UIPanelButtonTemplate" text="Close">
         <Size x="120" y="24" />
         <Anchors>
-          <Anchor point="BOTTOMRIGHT" x="-18" y="18" />
+          <Anchor point="BOTTOMRIGHT" x="-18" y="20" />
         </Anchors>
         <Scripts>
-          <OnClick>KeyedInterface:Hide()</OnClick>
+          <OnClick>KeyedFrame:Hide()</OnClick>
         </Scripts>
         <ButtonText name="Close" />
       </Button>
+
+      <Button name="KeystoneFrameButton1" inherits="KeystoneButtonTemplate" id="1">
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="KeyedFrame" x="2" y="-24"/>
+        </Anchors>
+      </Button>
+
+      <ScrollFrame name="KeyedFrameKeystoneList" inherits="FauxScrollFrameTemplate">
+        <Size x="240" y="384" />
+        <Anchors>
+          <Anchor point="TOPLEFT" x="6" y="-24" />
+        </Anchors>
+        <Scripts>
+          <OnVerticalScroll>
+            FauxScrollFrame_OnVerticalScroll(self, offset, KEYSTONE_LIST_HEIGHT, KeyedFrameKeystoneList_Update)
+          </OnVerticalScroll>
+        </Scripts>
+      </ScrollFrame>
     </Frames>
+    
     <Scripts>
+      <OnLoad function="KeyedFrame_OnLoad" />
+      <OnShow function="KeyedFrame_OnShow" />
       <OnDragStart>self:StartMoving()</OnDragStart>
       <OnDragStop>self:StopMovingOrSizing()</OnDragStop>
       <OnEscapePressed>self:Hide()</OnEscapePressed>
-      <OnShow>self:LoadList()</OnShow>
     </Scripts>
+    
   </Frame>
-
-  <Frame name="KeyedInterfacePlayerEntryTemplate" parent="KeyedInterface_PlayerList" virtual="true">
-    <Size x="240" y="24" />
-    <Backdrop bgFile="Interface\Common\ShadowOverlay-Left" tile="false">
-      <BackgroundInsets>
-        <AbsInset top="0" bottom="0" left="0" right="0"/>
-      </BackgroundInsets>
-    </Backdrop>
-  </Frame>
-  
-	<Script file="Gui.lua" />
 </Ui>

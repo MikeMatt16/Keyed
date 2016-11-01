@@ -3,8 +3,13 @@ Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0
 
 -- Default Profile
 local defaults = {
+	profile = {
+		MinimapPos = 45,
+		minimapButton = true
+	},
 	factionrealm = {
 		["*"] = {
+			name = "",
 			time = 0,
 			keystones = {}
 		}
@@ -21,10 +26,22 @@ function Keyed:OnInitialize()
 	-- Register "/keyed" command
 	Keyed:RegisterChatCommand("keyed", "Options")
 	Keyed:RegisterComm(prefix, "OnCommReceived")
-	KeyedInterface:RegisterForDrag("LeftButton")
-	
+	KeyedFrame:RegisterForDrag("LeftButton")
+
 	-- Load Database
 	self.db = LibStub("AceDB-3.0"):New("KeyedDB", defaults)
+
+	-- Show Minimap Button?
+	if self.db.profile.KeyedMinimapButton then
+		KeyedMinimapButton:Show()
+	end
+
+	-- Loop
+	for name, info in pairs(Keyed.db.factionrealm) do
+		if self:isempty(info.name) then
+			Keyed.db.factionrealm[name].name = name
+		end
+	end
 end
 
 function Keyed:OnEnable()
@@ -36,8 +53,9 @@ end
 function Keyed:Options(input)
 	-- Check...
 	if self:isempty(input) then
-		-- KeyedInterface:Show()
-		print(KeyedName, "Currently the GUI is disabled :(\r\n    However, you can type \"/weighted print db\" to view keystones in database.")
+		KeyedFrameKeystoneList_Update(KeyedFrameKeystoneList)
+		KeyedFrame:Show()
+	-- print(KeyedName, "Currently the GUI is disabled :(\r\n    However, you can type \"/weighted print db\" to view keystones in database.")
 	else
 		local Arguments = self:SplitString(input, ' ')
 		if Arguments[1] == "get" then
@@ -46,17 +64,101 @@ function Keyed:Options(input)
 			else
 				self:SendKeystoneRequest(Arguments[2])
 			end
-		elseif Arguments[1] == "print" then
-			if Arguments[2] == "db" or Arguments[2] == "database" then
+		elseif Arguments[1] == "print" and (Arguments[2] == "db" or Arguments[2] == "database") then
 				print(KeyedName, "Keystones in database:")
 				for playerName, keystones in pairs(self.db.factionrealm) do
 					for i = 1, #keystones.keystones do
 						print(KeyedName, playerName, "(" .. i .. "/" .. #keystones.keystones .. ")", keystones.keystones[i])
 					end
 				end
+		elseif Arguments[1] == "test" then
+			print(KeyedName, "Test Scroll Frame!")
+
+			TestData = TestData or {}
+			table.wipe(TestData)
+			for name, entry in pairs(self.db.factionrealm) do
+				table.insert(TestData, entry)
 			end
+
+			local backdrop = {
+				bgFile = "Interface\\DialogFrame\\UI-DialogBox-Gold-Background",
+				edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Gold-Border",
+				tile = true,
+				tileSize = 32,
+				edgeSize = 32,
+				insets = {
+					left = 11,
+					right = 12,
+					top = 12,
+					bottom = 11
+				}
+			}
+
+			TestScrollFrame = CreateFrame("ScrollFrame", "TestScrollFrame", UIParent, "FauxScrollFrameTemplate")
+			TestScrollFrame:SetPoint("CENTER")
+			TestScrollFrame:SetBackdrop(backdrop)
+			TestScrollFrame:SetSize(240, 240)
+			TestScrollFrame:SetScript("OnVerticalScroll", function(self, offset) 
+				FauxScrollFrame_OnVerticalScroll(self, offset, 240, TestScrollFrame_Update)
+			end)
+
+			TestButton1 = CreateFrame("Button", "TestButton1", TestScrollFrame, "KeystoneButtonTemplate")
+			TestButton1:SetID(1)
+			TestButton1:SetPoint("TOP", TestScrollFrame)
+			TestButton1Keystone = CreateFrame("Button", "TestButton1Keystone", TestButton1, "KeystoneItemTemplate")
+			TestButton1Keystone:SetPoint("RIGHT", TestButton1, 0, -2)
+			TestButton1Keystone.link = ""
+
+			for n=2,10,1 do
+				local button = CreateFrame("Button", "TestButton" .. n, TestScrollFrame, "KeystoneButtonTemplate")
+				button:SetID(n)
+				button:SetPoint("TOP", _G["TestButton" .. (n-1)], "BOTTOM")
+				local keystone = CreateFrame("Button", "TestButton" .. n .. "Keystone", button, "KeystoneItemTemplate")
+				keystone:SetPoint("RIGHT", button, 0, -2)
+				keystone.link = ""
+			end
+
+			TestScrollFrame_Update()
+			TestScrollFrame:Show()
+			else
+			print(KeyedName, "Incorrect usage...")
 		end
 	end
+end
+
+function TestScrollFrame_Update()
+	local dataCount = #TestData
+	local button, buttonText, keystone, name
+	local entryOffset = FauxScrollFrame_GetOffset(TestScrollFrame)
+	local entryIndex
+	local count = dataCount
+	if dataCount > 10 then
+		count = 10
+	end
+	for i=1, 10,1 do
+		entryIndex = entryOffset + i
+		button = _G["TestButton" .. i]
+		button.entryIndex = entryIndex
+		if(TestData[entryIndex]) then
+			name = "Entry: " .. tostring(TestData[entryIndex].name)
+			buttonText = _G["TestButton" .. i .. "Name"]
+			keystone = _G["TestButton" .. i .. "Keystone"]
+			buttonText:SetText(name)
+			if #TestData[entryIndex].keystones > 0 then
+				keystone.link = TestData[entryIndex].keystones[1]
+				keystone:Show()
+			else
+				keystone:Hide()
+			end
+		end
+		if entryIndex > dataCount then
+			button:Hide()
+		else
+			button:Show()
+		end
+	end
+
+	FauxScrollFrame_Update(TestScrollFrame, dataCount, 10, 240);
 end
 
 function Keyed:SendResponse(playerName, response)
@@ -82,8 +184,8 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 	-- Handle...
 	if arguments[1] == "request" then
 		if arguments[2] == keystoneRequest then
-			self:SendEntries(sender)
-			self:SendKeystones(sender)
+			self:SendEntries(sender)		-- Send database contents...
+			self:SendKeystones(sender)		-- Send your latest keystones...
 		end
 	elseif arguments[1] == playerKeystoneRequest then
 		player = arguments[2]
@@ -102,7 +204,6 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 			self.db.factionrealm[player].time = time
 			self.db.factionrealm[player].keystones = {}
 			for i = 1, #keystones do
-				print(self, sender, player, keystones[i])
 				table.insert(self.db.factionrealm[player].keystones, keystones[i])
 			end
 		end
@@ -117,14 +218,16 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 
 		-- Wipe and add...
 		if self.db.factionrealm[sender].time < time then
-			table.wipe(self.db.factionrealm[sender])
 			print(KeyedName, "Updating", sender, "database entry...")
 			self.db.factionrealm[sender].time = time
-			self.db.factionrealm[sender].keystones = {}
+			self.db.factionrealm[sender].name = sender
+			table.wipe(self.db.factionrealm[sender].keystones)
 			for i = 1, #keystones do
-				print(self, sender, keystones[i])
 				table.insert(self.db.factionrealm[sender].keystones, keystones[i])
 			end
+
+			-- Update List...
+			KeyedFrameKeystoneList_Update(KeyedFrameKeystoneList)
 		end
 	end
 end
