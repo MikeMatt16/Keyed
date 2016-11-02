@@ -2,10 +2,134 @@
     http://wowprogramming.com/FrameXML/UI.xsd">
   <Script file="KeyedFrame.lua" />
 
-  <Frame name="KeyedFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
+  <Button name="KeyedFramePlayerButtonTemplate" virtual="true">
+    <Size x="298" y="16"/>
     <Layers>
+      <Layer level="BORDER">
+        <FontString name="$parentName" inherits="GameFontNormalSmall" justifyH="LEFT">
+          <Size x="92" y="14"/>
+          <Anchors>
+            <Anchor point="TOPLEFT" x="10" y="-3"/>
+          </Anchors>
+        </FontString>
+        <FontString name="$parentDungeon" inherits="GameFontHighlightSmall" justifyH="LEFT">
+          <Size x="188" y="14"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentName" relativePoint="RIGHT" x="0" y="0"/>
+          </Anchors>
+        </FontString>
+        <FontString name="$parentLevel" inherits="GameFontHighlightSmall" justifyH="CENTER" wordwrap="false">
+          <Size x="24" y="0"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentDungeon" relativePoint="RIGHT" x="2" y="0"/>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    <Scripts>
+      <OnLoad>
+        self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+      </OnLoad>
+      <OnClick>
+        if self.link then
+          ChatFrame1EditBox:Show()
+          ChatFrame1EditBox:SetFocus()
+          ChatFrame1EditBox:Insert(self.link)
+        end
+        PlaySound("igMainMenuOptionCheckBoxOn");
+      </OnClick>
+      <OnEnter>
+        if self.link then
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:SetHyperlink(self.link)
+        GameTooltip:Show()
+        end
+      </OnEnter>
+      <OnLeave>
+        GameTooltip:Hide()
+      </OnLeave>
+    </Scripts>
+    <HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD">
+      <Size x="298" y="16"/>
+      <Anchors>
+        <Anchor point="TOP" x="5" y="-2"/>
+      </Anchors>
+    </HighlightTexture>
+  </Button>
+  <Button name="KeyedFrameColumnHeaderTemplate" virtual="true">
+    <Size x="10" y="24"/>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture parentKey="Left" name="$parentLeft" file="Interface\FriendsFrame\WhoFrame-ColumnTabs">
+          <Size x="5" y="24"/>
+          <Anchors>
+            <Anchor point="TOPLEFT"/>
+          </Anchors>
+          <TexCoords left="0" right="0.078125" top="0" bottom="0.75"/>
+        </Texture>
+        <Texture parentKey="Middle" name="$parentMiddle" file="Interface\FriendsFrame\WhoFrame-ColumnTabs">
+          <Size x="53" y="24"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeKey="$parent.Left" relativePoint="RIGHT"/>
+          </Anchors>
+          <TexCoords left="0.078125" right="0.90625" top="0" bottom="0.75"/>
+        </Texture>
+        <Texture parentKey="Right" name="$parentRight" file="Interface\FriendsFrame\WhoFrame-ColumnTabs">
+          <Size x="4" y="24"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeKey="$parent.Middle" relativePoint="RIGHT"/>
+          </Anchors>
+          <TexCoords left="0.90625" right="0.96875" top="0" bottom="0.75"/>
+        </Texture>
+      </Layer>
+    </Layers>
+    <Scripts>
+      <OnClick>
+        if ( self.sortType ) then
+        Keyed_SortKeyed(self.sortType);
+        end
+        PlaySound("igMainMenuOptionCheckBoxOn");
+      </OnClick>
+    </Scripts>
+    <ButtonText>
+      <Anchors>
+        <Anchor point="LEFT" x="8" y="0"/>
+      </Anchors>
+    </ButtonText>
+    <NormalFont style="GameFontHighlightSmall"/>
+    <HighlightTexture parentKey="HighlightTexture" name="$parentHighlightTexture" file="Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight" alphaMode="ADD">
+      <Anchors>
+        <Anchor point="TOPLEFT" relativeKey="$parent.Left" x="-2" y="5"/>
+        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.Right" x="2" y="-7"/>
+      </Anchors>
+    </HighlightTexture>
+  </Button>
+  
+  <Frame name="KeyedFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" inherits="PortraitFrameTemplate">
+    <Anchors>
+      <Anchor point="TOP" x="0" y="-50" />
+    </Anchors>
+    <Layers>
+      <Layer level="BORDER" textureSubLevel="1">
+        <Texture name="$parentBtnCornerLeft" inherits="UI-Frame-BtnCornerLeft">
+          <Anchors>
+            <Anchor point="BOTTOMLEFT" x="-2" y="-1"/>
+          </Anchors>
+        </Texture>
+        <Texture name="$parentBtnCornerRight" inherits="UI-Frame-BtnCornerRight">
+          <Anchors>
+            <Anchor point="BOTTOMRIGHT" x="0" y="-1"/>
+          </Anchors>
+        </Texture>
+        <Texture name="$parentButtonBottomBorder" inherits="_UI-Frame-BtnBotTile">
+          <Anchors>
+            <Anchor point="BOTTOMLEFT" relativeTo="$parentBtnCornerLeft" relativePoint="BOTTOMRIGHT" y="3"/>
+            <Anchor point="BOTTOMRIGHT" relativeTo="$parentBtnCornerRight" relativePoint="BOTTOMLEFT"/>
+          </Anchors>
+        </Texture>
+      </Layer>
       <Layer level="OVERLAY" textureSubLevel="-1">
-        <Texture name="$parentIcon" file="Interface\FriendsFrame\Battlenet-Portrait">
+        <Texture name="$parentIcon" file="Interface\AddOns\Keyed\Textures\Keyed-Portrait">
           <Size x="60" y="60"/>
           <Anchors>
             <Anchor point="TOPLEFT" x="-5" y="7"/>
@@ -13,14 +137,111 @@
         </Texture>
       </Layer>
       <Layer level="OVERLAY">
-        <FontString name="FriendsFrameTitleText" inherits="GameFontNormal">
+        <FontString name="KeyedFrameTitleText" inherits="GameFontNormal" text="Keyed">
           <Size x="250" y="16"/>
           <Anchors>
-            <Anchor point="BOTTOM" x="3" y="-16"/>
+            <Anchor point="TOP" x="3" y="-3"/>
           </Anchors>
         </FontString>
       </Layer>
     </Layers>
+    <Frames>
+      <Frame name="$parentInset" useParentLevel="true" inherits="InsetFrameTemplate" parentKey="Inset">
+        <Anchors>
+          <Anchor point="TOPLEFT" x="4" y="-80" />
+          <Anchor point="BOTTOMRIGHT" x="-6" y="26" />
+        </Anchors>
+      </Frame>
+      <Frame name="KeystoneListFrame" setAllPoints="true">
+        <Frames>
+          <Button name="KeyedFrameColumnHeader1" inherits="KeyedFrameColumnHeaderTemplate" text="Name">
+            <Anchors>
+              <Anchor point="TOPLEFT" x="7" y="-57" />
+            </Anchors>
+            <Scripts>
+              <OnLoad>
+                KeyedFrameColumn_SetWidth(self, 94)
+                self.sortType = "name"
+              </OnLoad>
+            </Scripts>
+          </Button>
+          <Button name="KeyedFrameColumnHeader2" inherits="KeyedFrameColumnHeaderTemplate" text="Dungeon">
+            <Anchors>
+              <Anchor point="LEFT" relativeTo="KeyedFrameColumnHeader1" relativePoint="RIGHT" x="-2" y="0" />
+            </Anchors>
+            <Scripts>
+              <OnLoad>
+                KeyedFrameColumn_SetWidth(self, 175)
+                self.sortType = "dungeon"
+              </OnLoad>
+            </Scripts>
+          </Button>
+          <Button name="KeyedFrameColumnHeader3" inherits="KeyedFrameColumnHeaderTemplate" text="Lvl">
+            <Anchors>
+              <Anchor point="LEFT" relativeTo="KeyedFrameColumnHeader2" relativePoint="RIGHT" x="-2" y="0" />
+            </Anchors>
+            <Scripts>
+              <OnLoad>
+                KeyedFrameColumn_SetWidth(self, 32)
+                self.sortType = "dungeon"
+              </OnLoad>
+            </Scripts>
+          </Button>
+          <Button name="KeyedFrameGetKeystonesButton" inherits="UIPanelButtonTemplate" text="Get Keystones">
+            <Size x="131" y="21"/>
+            <Anchors>
+              <Anchor point="BOTTOMLEFT" relativeTo="KeyedFrame" x="4" y="4"/>
+            </Anchors>
+            <Scripts>
+              <OnClick function="KeyedFrameGetKeystonesButton_OnClick"/>
+            </Scripts>
+          </Button>
+          <Button name="KeystoneListFrameButton1" inherits="KeyedFramePlayerButtonTemplate" id="1">
+            <Anchors>
+              <Anchor point="TOPLEFT" relativeTo="KeystoneListFrame" x="2" y="-82" />
+            </Anchors>
+          </Button>
+          <ScrollFrame name="KeystoneListScrollFrame" inherits="FauxScrollFrameTemplate">
+            <Size x="296" y="309" />
+            <Anchors>
+              <Anchor point="TOPRIGHT" relativeTo="KeystoneListFrame" relativePoint="TOPRIGHT" x="-33" y="-87" />
+            </Anchors>
+            <Scripts>
+              <OnVerticalScroll>
+                FauxScrollFrame_OnVerticalScroll(self, offset, KEYED_FRAME_PLAYER_HEIGHT, KeystoneList_Update);
+              </OnVerticalScroll>
+            </Scripts>
+            <Layers>
+              <Layer level="BACKGROUND">
+                <Texture file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+                  <Size x="31" y="256"/>
+                  <Anchors>
+                    <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-2" y="5"/>
+                  </Anchors>
+                  <TexCoords left="0" right="0.484375" top="0" bottom="1.0"/>
+                </Texture>
+                <Texture file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+                  <Size x="31" y="106"/>
+                  <Anchors>
+                    <Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-2" y="-2"/>
+                  </Anchors>
+                  <TexCoords left="0.515625" right="1.0" top="0" bottom="0.4140625"/>
+                </Texture>
+              </Layer>
+            </Layers>
+          </ScrollFrame>
+        </Frames>
+        <Scripts>
+          <OnLoad function="KeystoneListFrame_OnLoad" />
+          <OnDragStart>
+            KeyedFrame:StartMoving()
+          </OnDragStart>
+          <OnDragStop>
+            KeyedFrame:StopMovingOrSizing()
+          </OnDragStop>
+        </Scripts>
+      </Frame>
+    </Frames>
   </Frame>
 
 </Ui>

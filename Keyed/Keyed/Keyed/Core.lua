@@ -27,7 +27,7 @@ function Keyed:OnInitialize()
 	-- Register "/keyed" command
 	Keyed:RegisterChatCommand("keyed", "Options")
 	Keyed:RegisterComm(prefix, "OnCommReceived")
-	--KeyedFrame:RegisterForDrag("LeftButton")
+	KeystoneListFrame:RegisterForDrag("LeftButton")
 
 	-- Load Database
 	self.db = LibStub("AceDB-3.0"):New("Keyedv2DB", defaults)
@@ -48,7 +48,7 @@ end
 function Keyed:Options(input)
 	-- Check...
 	if self:isempty(input) then
-		KeyedFrameKeystoneList_Update(KeyedFrameKeystoneList)
+		KeystoneList_Update()
 		KeyedFrame:Show()
 	else
 		local Arguments = self:SplitString(input, ' ')
@@ -216,7 +216,7 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 			end
 
 			-- Update List...
-			KeyedFrameKeystoneList_Update(KeyedFrameKeystoneList)
+			KeystoneList_Update ()
 		end
 	end
 end

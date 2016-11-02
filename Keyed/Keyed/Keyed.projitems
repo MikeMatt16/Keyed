@@ -21,6 +21,7 @@
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceHook-3.0\AceHook-3.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibStub\LibStub.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Textures\Keyed-Portrait.blp" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Gui.xml" />

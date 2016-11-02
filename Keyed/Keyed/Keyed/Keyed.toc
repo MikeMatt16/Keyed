@@ -7,4 +7,4 @@
 
 References.xml
 Core.lua
-KeyedFrame.lua
+KeyedFrame.xml
