@@ -1,3 +1,4 @@
+KEYSTONE_LIST_DISPLAY_ALL = true
 KEYSTONE_LIST_HEIGHT = 384
 KEYSTONE_LIST_COUNT = 16
 KEYSTONE_DATA = {}
@@ -20,7 +21,11 @@ function KeyedFrameKeystoneList_Update (self)
 	KEYSTONE_DATA = KEYSTONE_DATA or {}
 	table.wipe(KEYSTONE_DATA)
 	for name, entry in pairs(Keyed.db.factionrealm) do
-		if name and entry.name ~= "" then table.insert(KEYSTONE_DATA, entry) end
+		if name and entry.name ~= "" then
+			if KEYSTONE_LIST_DISPLAY_ALL or #entry.keystones > 0 then
+				table.insert(KEYSTONE_DATA, entry)
+			end
+		end
 	end
 	
 	local offset = FauxScrollFrame_GetOffset(self)
@@ -28,9 +33,12 @@ function KeyedFrameKeystoneList_Update (self)
 	local name, index, entry, entryText, keystone
 	local count = num_entries
 	if num_entries > KEYSTONE_LIST_COUNT then
-		count = KEYSTONE_LIST_COUNT
+			count = KEYSTONE_LIST_COUNT
 	end
+
+	-- Setup (fixed) List
 	for n = 1, KEYSTONE_LIST_COUNT, 1 do
+		show = false
 		index = offset + n
 		entry = _G["KeystoneFrameButton" .. n]
 		entry.entryIndex = index
@@ -49,8 +57,10 @@ function KeyedFrameKeystoneList_Update (self)
 		else
 			entry:Hide()
 		end
+
 	end
-	
+
+	-- Update...
 	FauxScrollFrame_Update(KeyedFrameKeystoneList, num_entries, KEYSTONE_LIST_COUNT, KEYSTONE_LIST_HEIGHT)
 end
 
