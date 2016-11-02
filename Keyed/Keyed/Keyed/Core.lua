@@ -33,10 +33,10 @@ function Keyed:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("Keyedv2DB", defaults)
 
 	-- Show Minimap Button?
-	--if Keyed.db.profile.showMinimapButton == 1 then
-	--	KeyedMinimapButton:Show()
-	--	KeyedFrameShowMinimapButton:SetChecked(true)
-	--end
+	if Keyed.db.profile.showMinimapButton == 1 then
+		KeyedMinimapButton:Show()
+		KeyedFrameShowMinimapButton:SetChecked(true)
+	end
 end
 
 function Keyed:OnEnable()
@@ -58,6 +58,9 @@ function Keyed:Options(input)
 			else
 				self:SendKeystoneRequest(Arguments[2])
 			end
+		elseif Arguments[1] == "version" then
+			local version = GetAddOnMetadata("Keyed", "Version")
+			if version then print(KeyedName, "Version", version) end
 		elseif Arguments[1] == "print" and (Arguments[2] == "db" or Arguments[2] == "database") then
 				print(KeyedName, "Keystones in database:")
 				for uid, entry in pairs(self.db.factionrealm) do
@@ -75,95 +78,10 @@ function Keyed:Options(input)
 				self.db.factionrealm[Arguments[2]] = nil
 				print(KeyedName, "Wiped", Arguments[2])
 			end
-		elseif Arguments[1] == "test" then
-			print(KeyedName, "Test Scroll Frame!")
-			print("  Hide with \"/run TestScrollFrame:Hide()\"")
-
-			TestData = TestData or {}
-			table.wipe(TestData)
-			for name, entry in pairs(self.db.factionrealm) do
-				table.insert(TestData, entry)
-			end
-
-			local backdrop = {
-				bgFile = "Interface\\DialogFrame\\UI-DialogBox-Gold-Background",
-				edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Gold-Border",
-				tile = true,
-				tileSize = 32,
-				edgeSize = 32,
-				insets = {
-					left = 11,
-					right = 12,
-					top = 12,
-					bottom = 11
-				}
-			}
-
-			TestScrollFrame = CreateFrame("ScrollFrame", "TestScrollFrame", UIParent, "FauxScrollFrameTemplate")
-			TestScrollFrame:SetPoint("CENTER")
-			TestScrollFrame:SetBackdrop(backdrop)
-			TestScrollFrame:SetSize(240, 240)
-			TestScrollFrame:SetScript("OnVerticalScroll", function(self, offset) 
-				FauxScrollFrame_OnVerticalScroll(self, offset, 240, TestScrollFrame_Update)
-			end)
-
-			TestButton1 = CreateFrame("Button", "TestButton1", TestScrollFrame, "KeystoneButtonTemplate")
-			TestButton1:SetID(1)
-			TestButton1:SetPoint("TOP", TestScrollFrame)
-			TestButton1Keystone = CreateFrame("Button", "TestButton1Keystone", TestButton1, "KeystoneItemTemplate")
-			TestButton1Keystone:SetPoint("RIGHT", TestButton1, 0, -2)
-			TestButton1Keystone.link = ""
-
-			for n=2,10,1 do
-				local button = CreateFrame("Button", "TestButton" .. n, TestScrollFrame, "KeystoneButtonTemplate")
-				button:SetID(n)
-				button:SetPoint("TOP", _G["TestButton" .. (n-1)], "BOTTOM")
-				local keystone = CreateFrame("Button", "TestButton" .. n .. "Keystone", button, "KeystoneItemTemplate")
-				keystone:SetPoint("RIGHT", button, 0, -2)
-				keystone.link = ""
-			end
-
-			TestScrollFrame_Update()
-			TestScrollFrame:Show()
-			else
+		else
 			print(KeyedName, "Incorrect usage...")
 		end
 	end
-end
-
-function TestScrollFrame_Update()
-	local dataCount = #TestData
-	local button, buttonText, keystone, name
-	local entryOffset = FauxScrollFrame_GetOffset(TestScrollFrame)
-	local entryIndex
-	local count = dataCount
-	if dataCount > 10 then
-		count = 10
-	end
-	for i=1, 10,1 do
-		entryIndex = entryOffset + i
-		button = _G["TestButton" .. i]
-		button.entryIndex = entryIndex
-		if(TestData[entryIndex]) then
-			name = "Entry: " .. tostring(TestData[entryIndex].name)
-			buttonText = _G["TestButton" .. i .. "Name"]
-			keystone = _G["TestButton" .. i .. "Keystone"]
-			buttonText:SetText(name)
-			if #TestData[entryIndex].keystones > 0 then
-				keystone.link = TestData[entryIndex].keystones[1]
-				keystone:Show()
-			else
-				keystone:Hide()
-			end
-		end
-		if entryIndex > dataCount then
-			button:Hide()
-		else
-			button:Show()
-		end
-	end
-
-	FauxScrollFrame_Update(TestScrollFrame, dataCount, 10, 240);
 end
 
 function Keyed:SendResponse(playerName, response)

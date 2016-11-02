@@ -104,7 +104,6 @@
       </Anchors>
     </HighlightTexture>
   </Button>
-  
   <Frame name="KeyedFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" inherits="PortraitFrameTemplate">
     <Anchors>
       <Anchor point="TOP" x="0" y="-50" />
@@ -142,6 +141,13 @@
           <Anchors>
             <Anchor point="TOP" x="3" y="-3"/>
           </Anchors>
+        </FontString>
+        <FontString name="KeyedVersionText" inherits="GameFontNormal">
+          <Size x="60" y="16" />
+          <Anchors>
+            <Anchor point="BOTTOMRIGHT" x="2" y="5" />
+          </Anchors>
+          <Color a="1" r="0.6" g="0.6" b="0.6"/>
         </FontString>
       </Layer>
     </Layers>
@@ -183,7 +189,7 @@
             <Scripts>
               <OnLoad>
                 KeyedFrameColumn_SetWidth(self, 32)
-                self.sortType = "dungeon"
+                self.sortType = "level"
               </OnLoad>
             </Scripts>
           </Button>
@@ -196,6 +202,35 @@
               <OnClick function="KeyedFrameGetKeystonesButton_OnClick"/>
             </Scripts>
           </Button>
+          <CheckButton name="KeyedFrameShowMinimapButton" checked="false">
+            <Size x="24" y="24" />
+            <Anchors>
+              <Anchor point="TOPLEFT" x="56" y="-28" />
+            </Anchors>
+            <HitRectInsets>
+              <AbsInset left="0" right="0" top="0" bottom="8"/>
+            </HitRectInsets>
+            <Layers>
+              <Layer level="BORDER">
+                <FontString inherits="GameFontNormalSmall" justifyH="LEFT" text="Enable Minimap Button">
+                  <Size x="120" y="14"/>
+                  <Anchors>
+                    <Anchor point="LEFT" x="26" y="0"/>
+                  </Anchors>
+                </FontString>
+              </Layer>
+            </Layers>
+            <Scripts>
+              <OnClick>
+                KeyedFrame_ToggleMinimap(self, self:GetChecked())
+              </OnClick>
+            </Scripts>
+            <NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>
+            <PushedTexture file="Interface\Buttons\UI-CheckBox-Down"/>
+            <HighlightTexture file="Interface\Buttons\UI-CheckBox-Highlight" alphaMode="ADD"/>
+            <CheckedTexture name="$parentCheckedTexture" file="Interface\Buttons\UI-CheckBox-Check"/>
+            <DisabledCheckedTexture file="Interface\Buttons\UI-CheckBox-Check-Disabled"/>
+          </CheckButton>
           <Button name="KeystoneListFrameButton1" inherits="KeyedFramePlayerButtonTemplate" id="1">
             <Anchors>
               <Anchor point="TOPLEFT" relativeTo="KeystoneListFrame" x="2" y="-82" />
@@ -243,5 +278,65 @@
       </Frame>
     </Frames>
   </Frame>
-
+  <Button name="KeyedMinimapButton" parent="Minimap" enableMouse="true" movable="true" hidden="true">
+    <Size>
+      <AbsDimension x="33" y="33"/>
+    </Size>
+    <Anchors>
+      <Anchor point="TOPLEFT"/>
+    </Anchors>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="KeyedMinimapButtonIcon" file="Interface\Icons\INV_Relics_Hourglass">
+          <Size>
+            <AbsDimension x="21" y="21"/>
+          </Size>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset>
+                <AbsDimension x="5" y="-4"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </Texture>
+      </Layer>
+      <Layer level="OVERLAY">
+        <Texture file="Interface\Minimap\MiniMap-TrackingBorder">
+          <Size>
+            <AbsDimension x="56" y="56"/>
+          </Size>
+          <Anchors>
+            <Anchor point="TOPLEFT"/>
+          </Anchors>
+        </Texture>
+      </Layer>
+    </Layers>
+    <Frames>
+      <Frame name="KeyedMinimapButtonDraggingFrame" hidden="true">
+        <Scripts>
+          <OnUpdate>
+            KeyedMinimapButtonDraggingFrameOnUpdate()
+          </OnUpdate>
+        </Scripts>
+      </Frame>
+    </Frames>
+    <Scripts>
+      <OnLoad>
+        self:RegisterForClicks("LeftButtonUp","RightButtonUp")
+        self:RegisterForDrag("LeftButton","RightButton")
+      </OnLoad>
+      <OnDragStart>
+        self:LockHighlight()
+        KeyedMinimapButtonDraggingFrame:Show()
+      </OnDragStart>
+      <OnDragStop>
+        self:UnlockHighlight()
+        KeyedMinimapButtonDraggingFrame:Hide()
+      </OnDragStop>
+      <OnClick>
+        KeyedMinimapButtonOnClick() -- do your thing in here, arg1 is mouse button clicked
+      </OnClick>
+    </Scripts>
+    <HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
+  </Button>
 </Ui>

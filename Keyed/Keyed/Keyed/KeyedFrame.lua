@@ -1,5 +1,8 @@
 ﻿KEYED_FRAME_PLAYER_HEIGHT = 16
 KEYSTONES_TO_DISPLAY = 19
+KEYED_SORT_ORDER_DESCENDING = false
+KEYED_SORT_FUNCTION = Keyed_SortByLevel
+KEYED_SORT_TYPE = "level"
 INSTANCE_NAMES = {
 	-- Raids
 	["1520"] = "The Emerald Nightmare",
@@ -25,9 +28,17 @@ function KeystoneListFrame_OnLoad (self)
 		button:SetID (i)
 		button:SetPoint ("TOP", _G["KeystoneListFrameButton" .. (i - 1)], "BOTTOM")
 	end
+
+	-- Set Version
+	local version = GetAddOnMetadata("Keyed", "Version")
+	if version then KeyedVersionText:SetText("v" .. version) end
 end
 
 function KeyedFrameGetKeystonesButton_OnClick()
+	-- Request...
+	if Keyed then
+		Keyed:BroadcastKeystoneRequest()
+	end
 end
 
 function KeystoneList_Update ()
@@ -82,27 +93,34 @@ end
 
 function GetKeystoneData ()
 	-- Prepare
-	local name, dungeon, level
+	local name, dungeon, level, id
 	local number = 0
 	local data = {}
-	local sortedData = {}
 
 	-- Loop through database
 	if Keyed and Keyed.db.factionrealm then
 		for uid, entry in pairs (Keyed.db.factionrealm) do
 			if entry.uid and entry.name and entry.name ~= "" and entry.keystones and (#entry.keystones > 0) then
-				name, dungeon, level = ExtractKeystoneData (entry.keystones[1])
+				name, dungeon, level, id = ExtractKeystoneData (entry.keystones[1])
 				number = number + 1
 				table.insert (data, {
 					name = entry.name,
 					dungeon = dungeon,
-					level = level,
+					dungeonId = tonumber(id),
+					level = tonumber(level),
 					link = entry.keystones[1]
 			})
 			end
 		end
 	end
 
+	-- Sort...
+	if KEYED_SORT_FUNCTION then
+		table.sort (data, KEYED_SORT_FUNCTION)
+	else
+		table.sort(data, Keyed_SortByLevel)
+	end
+	
 	-- Return results
 	return number, data
 end
@@ -114,9 +132,85 @@ function ExtractKeystoneData (hyperlink)
 	-- Return Tom foolery for now...
 	local instanceName = "Unknown (" .. instMapId .. ")"
 	if INSTANCE_NAMES[tostring(instMapId)] then instanceName = INSTANCE_NAMES[tostring(instMapId)] end
-	return name, instanceName, plus
+	return name, instanceName, plus, instMapId
 end
 
 function Keyed_SortKeyed (sort)
+	
+	-- Ascend or Descend?
+	if KEYED_SORT_TYPE == sort then
+		KEYED_SORT_ORDER_DESCENDING = not(KEYED_SORT_ORDER_DESCENDING)	-- Toggle...
+	else
+		KEYED_SORT_ORDER_DESCENDING = false
+	end
+	
+	-- Set...
+	KEYED_SORT_TYPE = sort
+	if sort == "name" then
+		KEYED_SORT_FUNCTION = Keyed_SortByName
+	elseif sort == "dungeon" then
+		KEYED_SORT_FUNCTION = Keyed_SortByDungeon
+	elseif sort == "level" then
+		KEYED_SORT_FUNCTION = Keyed_SortByLevel
+	end
 
+	-- Update
+	KeystoneList_Update()
+end
+
+function Keyed_SortByName (a, b)
+	if KEYED_SORT_ORDER_DESCENDING then
+		return a.name > b.name
+	else
+		return a.name < b.name
+	end
+end
+
+function Keyed_SortByDungeon (a, b)
+	if KEYED_SORT_ORDER_DESCENDING then
+		return a.dungeon > b.dungeon
+	else
+		return a.dungeon < b.dungeon
+	end
+end
+
+function Keyed_SortByLevel (a, b)
+	if KEYED_SORT_ORDER_DESCENDING then
+		return a.level < b.level
+	else
+		return a.level > b.level
+	end
+end
+
+function KeyedMinimapButtonReposition()
+	KeyedMinimapButton:SetPoint("TOPLEFT","Minimap","TOPLEFT",52-(80*cos(Keyed.db.profile.MinimapPos)),(80*sin(Keyed.db.profile.MinimapPos))-52)
+end
+
+function KeyedFrame_ToggleMinimap(self, checked)
+	Keyed.db.profile.showMinimapButton = 0
+	KeyedMinimapButton:Hide()
+
+	if checked then
+		Keyed.db.profile.showMinimapButton = 1
+		KeyedMinimapButton:Show()
+	end
+end
+
+-- Only while the button is dragged this is called every frame
+function KeyedMinimapButtonDraggingFrameOnUpdate()
+
+	local xpos,ypos = GetCursorPosition()
+	local xmin,ymin = Minimap:GetLeft(), Minimap:GetBottom()
+
+	xpos = xmin-xpos/UIParent:GetScale()+70 -- get coordinates as differences from the center of the minimap
+	ypos = ypos/UIParent:GetScale()-ymin-70
+
+	Keyed.db.profile.MinimapPos = math.deg(math.atan2(ypos,xpos)) -- save the degrees we are relative to the minimap center
+	KeyedMinimapButtonReposition() -- move the button
+end
+
+-- Put your code that you want on a minimap button click here.  arg1="LeftButton", "RightButton", etc
+function KeyedMinimapButtonOnClick()
+	KeyedFrameKeystoneList_Update(KeyedFrameKeystoneList)
+	KeyedFrame:Show()
 end
