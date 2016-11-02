@@ -5,6 +5,7 @@ Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0
 local defaults = {
 	profile = {
 		MinimapPos = 45,
+		showMinimapButton = 1
 	},
 	factionrealm = {
 		["*"] = {
@@ -30,6 +31,12 @@ function Keyed:OnInitialize()
 
 	-- Load Database
 	self.db = LibStub("AceDB-3.0"):New("Keyedv2DB", defaults)
+
+	-- Show Minimap Button?
+	if Keyed.db.profile.showMinimapButton == 1 then
+		KeyedMinimapButton:Show()
+		KeyedFrameShowMinimapButton:SetChecked(true)
+	end
 end
 
 function Keyed:OnEnable()

@@ -66,6 +66,16 @@ function KeyedMinimapButtonReposition()
 	KeyedMinimapButton:SetPoint("TOPLEFT","Minimap","TOPLEFT",52-(80*cos(Keyed.db.profile.MinimapPos)),(80*sin(Keyed.db.profile.MinimapPos))-52)
 end
 
+function KeyedFrame_ToggleMinimap(self, checked)
+	Keyed.db.profile.showMinimapButton = 0
+	KeyedMinimapButton:Hide()
+
+	if checked then
+		Keyed.db.profile.showMinimapButton = 1
+		KeyedMinimapButton:Show()
+	end
+end
+
 -- Only while the button is dragged this is called every frame
 function KeyedMinimapButtonDraggingFrameOnUpdate()
 
