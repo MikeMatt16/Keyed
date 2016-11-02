@@ -1,0 +1,26 @@
+﻿<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+    http://wowprogramming.com/FrameXML/UI.xsd">
+  <Script file="KeyedFrame.lua" />
+
+  <Frame name="KeyedFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
+    <Layers>
+      <Layer level="OVERLAY" textureSubLevel="-1">
+        <Texture name="$parentIcon" file="Interface\FriendsFrame\Battlenet-Portrait">
+          <Size x="60" y="60"/>
+          <Anchors>
+            <Anchor point="TOPLEFT" x="-5" y="7"/>
+          </Anchors>
+        </Texture>
+      </Layer>
+      <Layer level="OVERLAY">
+        <FontString name="FriendsFrameTitleText" inherits="GameFontNormal">
+          <Size x="250" y="16"/>
+          <Anchors>
+            <Anchor point="BOTTOM" x="3" y="-16"/>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+  </Frame>
+
+</Ui>

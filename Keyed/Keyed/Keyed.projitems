@@ -12,21 +12,25 @@
     <None Include="$(MSBuildThisFileDirectory)Keyed\Core.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Gui.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Keyed.toc" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\KeyedFrame.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceAddon-3.0\AceAddon-3.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceComm-3.0\AceComm-3.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceComm-3.0\ChatThrottleLib.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceConsole-3.0\AceConsole-3.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceDB-3.0\AceDB-3.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceHook-3.0\AceHook-3.0.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibStub\LibStub.lua" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Gui.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\KeyedFrame.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceAddon-3.0\AceAddon-3.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceComm-3.0\AceComm-3.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceConsole-3.0\AceConsole-3.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceDB-3.0\AceDB-3.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceHook-3.0\AceHook-3.0.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\References.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Thankyou.txt" />
   </ItemGroup>

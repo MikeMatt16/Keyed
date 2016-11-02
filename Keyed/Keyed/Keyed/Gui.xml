@@ -123,8 +123,8 @@
       </OnClick>
     </Scripts>
   </Button>
-  
-  <Frame name="KeyedFrame" parent="UIParent" frameStrata="MEDIUM" enableKeyboard ="true" enableMouse="true" hidden="true" movable="true">
+
+  <Frame name="KeyedFrameOld" parent="UIParent" frameStrata="MEDIUM" enableKeyboard ="true" enableMouse="true" hidden="true" movable="true">
     <Size x="280" y="488" />
     <Anchors>
       <Anchor point="CENTER" />
@@ -208,8 +208,8 @@
         </Layers>
         <Scripts>
           <OnClick>
-            KEYSTONE_LIST_DISPLAY_ALL = false
-            if self:GetChecked() then KEYSTONE_LIST_DISPLAY_ALL = true end
+            KEYSTONE_LIST_DISPLAY_ALL = true
+            if self:GetChecked() then KEYSTONE_LIST_DISPLAY_ALL = false end
             KeyedFrameKeystoneList_Update(KeyedFrameKeystoneList)
           </OnClick>
         </Scripts>

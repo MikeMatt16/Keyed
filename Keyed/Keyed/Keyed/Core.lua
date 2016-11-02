@@ -27,16 +27,16 @@ function Keyed:OnInitialize()
 	-- Register "/keyed" command
 	Keyed:RegisterChatCommand("keyed", "Options")
 	Keyed:RegisterComm(prefix, "OnCommReceived")
-	KeyedFrame:RegisterForDrag("LeftButton")
+	--KeyedFrame:RegisterForDrag("LeftButton")
 
 	-- Load Database
 	self.db = LibStub("AceDB-3.0"):New("Keyedv2DB", defaults)
 
 	-- Show Minimap Button?
-	if Keyed.db.profile.showMinimapButton == 1 then
-		KeyedMinimapButton:Show()
-		KeyedFrameShowMinimapButton:SetChecked(true)
-	end
+	--if Keyed.db.profile.showMinimapButton == 1 then
+	--	KeyedMinimapButton:Show()
+	--	KeyedFrameShowMinimapButton:SetChecked(true)
+	--end
 end
 
 function Keyed:OnEnable()
