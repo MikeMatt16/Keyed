@@ -218,6 +218,6 @@ end
 
 -- Put your code that you want on a minimap button click here.  arg1="LeftButton", "RightButton", etc
 function KeyedMinimapButtonOnClick()
-	KeyedFrameKeystoneList_Update(KeyedFrameKeystoneList)
+	KeystoneList_Update()
 	KeyedFrame:Show()
 end
