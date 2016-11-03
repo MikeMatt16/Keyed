@@ -35,6 +35,9 @@ function KeystoneListFrame_OnLoad (self)
 	-- Set Version
 	local version = GetAddOnMetadata("Keyed", "Version")
 	if version then KeyedVersionText:SetText("v" .. version) end
+
+	-- Get Keystones...
+	Keyed:BroadcastKeystoneRequest()
 end
 
 function KeyedFrameGetKeystonesButton_OnClick()
