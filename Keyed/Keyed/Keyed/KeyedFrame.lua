@@ -209,7 +209,7 @@ function Keyed_SortByLevel (a, b)
 end
 
 function KeyedFrame_ToggleMinimap(self, checked)
-	ff checked then
+	if checked then
 		Keyed.db.profile.minimap.hide = false
 		KeyedMinimapButton:Show("Keyed")
 	else
