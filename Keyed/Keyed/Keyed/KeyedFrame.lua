@@ -61,6 +61,16 @@ function KeystoneList_Update ()
 		showScrollBar = 1
 	end
 
+	local SetDepleted = function(fontString)
+		fontString:SetTextColor(0.6, 0.6, 0.6, 1.0)
+	end
+	local SetHighlighted = function(fontString)
+		fontString:SetTextColor(GameFontHighlightSmall:GetTextColor())
+	end
+	local SetNormal = function(fontString)
+		fontString:SetTextColor(GameFontNormalSmall:GetTextColor())
+	end
+
 	for i=1, KEYSTONES_TO_DISPLAY, 1 do
 		keystoneIndex = keystoneOffset + i
 		button = _G["KeystoneListFrameButton" .. i]
@@ -68,15 +78,13 @@ function KeystoneList_Update ()
 		button.link = nil
 		if keystoneIndex < #keystoneData then
 			button.link = keystoneData[keystoneIndex].link
+			button.depleted = keystoneData[keystoneIndex].depleted
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Name"];
 			buttonText:SetText (keystoneData[keystoneIndex].name);
-			if keystoneData[keystoneIndex].depleted then
-				buttonText:SetTextColor (0.6, 0.6, 0.6, 1.0)
-			else
-				buttonText:SetTextColor (GameFontNormalSmall:GetTextColor())
-			end
+			if button.depleted then SetDepleted(buttonText) else SetNormal(buttonText) end
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Dungeon"];
 			buttonText:SetText (keystoneData[keystoneIndex].dungeon);
+			if button.depleted then SetDepleted(buttonText) else SetHighlighted(buttonText) end
 			if showScrollBar then
 				buttonText:SetWidth (170)
 			else
@@ -84,6 +92,7 @@ function KeystoneList_Update ()
 			end
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Level"];
 			buttonText:SetText (keystoneData[keystoneIndex].level);
+			if button.depleted then SetDepleted(buttonText) else SetHighlighted(buttonText) end
 			button:Show()
 		else
 			button:Hide()
@@ -199,36 +208,12 @@ function Keyed_SortByLevel (a, b)
 	end
 end
 
-function KeyedMinimapButtonReposition()
-	local angle = Keyed.db.profile.minimapAngle
-	KeyedMinimapButton:SetPoint("TOPLEFT","Minimap","TOPLEFT",52-(80*cos(angle)),(80*sin(Keyedangle))-52)
-end
-
 function KeyedFrame_ToggleMinimap(self, checked)
-	Keyed.db.profile.showMinimapButton = 0
-	KeyedMinimapButton:Hide()
+	Keyed.db.profile.minimap.hide = false
+	KeyedMinimapButton:Hide("Keyed")
 
 	if checked then
-		Keyed.db.profile.showMinimapButton = 1
-		KeyedMinimapButton:Show()
+		Keyed.db.profile.minimap.hide = true
+		KeyedMinimapButton:Show("Keyed")
 	end
-end
-
--- Only while the button is dragged this is called every frame
-function KeyedMinimapButtonDraggingFrameOnUpdate()
-
-	local xpos,ypos = GetCursorPosition()
-	local xmin,ymin = Minimap:GetLeft(), Minimap:GetBottom()
-
-	xpos = xmin-xpos/UIParent:GetScale()+70 -- get coordinates as differences from the center of the minimap
-	ypos = ypos/UIParent:GetScale()-ymin-70
-
-	Keyed.db.profile.minimapAngle = math.deg(math.atan2(ypos,xpos)) -- save the degrees we are relative to the minimap center
-	KeyedMinimapButtonReposition() -- move the button
-end
-
--- Put your code that you want on a minimap button click here.  arg1="LeftButton", "RightButton", etc
-function KeyedMinimapButton_OnClick()
-	KeystoneList_Update()
-	KeyedFrame:Show()
 end

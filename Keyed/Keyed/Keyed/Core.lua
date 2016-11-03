@@ -4,8 +4,9 @@ Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0
 -- Default Profile
 local defaults = {
 	profile = {
-		minimapAngle = 45,
-		showMinimapButton = 1
+		minimap = {
+			hide = false,
+		},
 	},
 	factionrealm = {
 		["*"] = {
@@ -16,6 +17,22 @@ local defaults = {
 		}
 	}
 }
+
+local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
+	type = "data source",
+	text = "Keyed",
+	icon = "Interface\\AddOns\\Keyed\\Textures\\Keyed-Portrait",
+	OnClick = function()
+		if KeyedFrame then
+			if KeyedFrame:IsShown() then
+				KeyedFrame:Hide()
+			else
+				KeyedFrame:Show()
+			end
+		end
+	end,
+})
+KeyedMinimapButton = LibStub("LibDBIcon-1.0")
 
 local KeystoneId = 138019
 local prefix = "KEYED_13"
@@ -32,11 +49,9 @@ function Keyed:OnInitialize()
 	-- Load Database
 	self.db = LibStub("AceDB-3.0"):New("Keyedv2DB", defaults)
 
-	-- Show Minimap Button?
-	if Keyed.db.profile.showMinimapButton == 1 then
-		KeyedMinimapButton:Show()
-		KeyedFrameShowMinimapButton:SetChecked(true)
-	end
+	-- Register Minimap Button
+	KeyedMinimapButton:Register("Keyed", keyedLDB, self.db.profile.minimap)
+	KeyedFrameShowMinimapButton:SetChecked(not(self.db.profile.minimap.hide))
 end
 
 function Keyed:OnEnable()
