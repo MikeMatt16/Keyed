@@ -1,4 +1,7 @@
-﻿KEYED_FRAME_PLAYER_HEIGHT = 16
+﻿KEYED_TUESDAY = 345600
+KEYED_WEEK = 604800
+KEYED_FRAME_KEYSTONES_BUTTON_PRESSED = 0
+KEYED_FRAME_PLAYER_HEIGHT = 16
 KEYSTONES_TO_DISPLAY = 19
 KEYED_SORT_ORDER_DESCENDING = false
 KEYED_SORT_FUNCTION = Keyed_SortByLevel
@@ -38,6 +41,7 @@ function KeyedFrameGetKeystonesButton_OnClick()
 	-- Request...
 	if Keyed then
 		Keyed:BroadcastKeystoneRequest()
+		KEYED_FRAME_KEYSTONES_BUTTON_PRESSED = GetServerTime()
 	end
 end
 
@@ -93,6 +97,7 @@ end
 
 function GetKeystoneData ()
 	-- Prepare
+	local tuesdays = math.floor((GetServerTime() + KEYED_TUESDAY) / KEYED_WEEK)
 	local name, dungeon, level, id
 	local number = 0
 	local data = {}
@@ -102,14 +107,16 @@ function GetKeystoneData ()
 		for uid, entry in pairs (Keyed.db.factionrealm) do
 			if entry.uid and entry.name and entry.name ~= "" and entry.keystones and (#entry.keystones > 0) then
 				name, dungeon, level, id = ExtractKeystoneData (entry.keystones[1])
-				number = number + 1
-				table.insert (data, {
-					name = entry.name,
-					dungeon = dungeon,
-					dungeonId = tonumber(id),
-					level = tonumber(level),
-					link = entry.keystones[1]
-			})
+				if math.floor((entry.time + KEYED_TUESDAY) / KEYED_WEEK) == tuesdays then
+					number = number + 1
+					table.insert (data, {
+						name = entry.name,
+						dungeon = dungeon,
+						dungeonId = tonumber(id),
+						level = tonumber(level),
+						link = entry.keystones[1]
+					})
+				end
 			end
 		end
 	end

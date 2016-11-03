@@ -200,6 +200,17 @@
             </Anchors>
             <Scripts>
               <OnClick function="KeyedFrameGetKeystonesButton_OnClick"/>
+              <OnUpdate>
+                if KEYED_FRAME_KEYSTONES_BUTTON_PRESSED then
+                  if (GetServerTime() - KEYED_FRAME_KEYSTONES_BUTTON_PRESSED) > 4 then
+                    self:Enable()
+                  else
+                    self:Disable()
+                  end
+                else
+                  self:Enable()
+                end
+              </OnUpdate>
             </Scripts>
           </Button>
           <CheckButton name="KeyedFrameShowMinimapButton" checked="false">
