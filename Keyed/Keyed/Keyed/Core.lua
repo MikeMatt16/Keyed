@@ -188,7 +188,7 @@ function Keyed:FindKeystones()
 	slots[2] = GetContainerNumSlots(1)
 	slots[3] = GetContainerNumSlots(2)
 	slots[4] = GetContainerNumSlots(3)
-	slots[5] = GetContainerNumSlots(5)
+	slots[5] = GetContainerNumSlots(4)
 
 	-- Loop through every bag slot...
 	for i = 1, #slots do
