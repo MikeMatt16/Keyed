@@ -1,5 +1,6 @@
 ﻿KEYED_TUESDAY = 345600
 KEYED_WEEK = 604800
+KEYED_DEPLETED_MASK = 4194304
 KEYED_FRAME_KEYSTONES_BUTTON_PRESSED = 0
 KEYED_FRAME_PLAYER_HEIGHT = 16
 KEYSTONES_TO_DISPLAY = 19
@@ -69,6 +70,11 @@ function KeystoneList_Update ()
 			button.link = keystoneData[keystoneIndex].link
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Name"];
 			buttonText:SetText (keystoneData[keystoneIndex].name);
+			if keystoneData[keystoneIndex].depleted then
+				buttonText:SetTextColor (0.6, 0.6, 0.6, 1.0)
+			else
+				buttonText:SetTextColor (GameFontNormalSmall:GetTextColor())
+			end
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Dungeon"];
 			buttonText:SetText (keystoneData[keystoneIndex].dungeon);
 			if showScrollBar then
@@ -101,7 +107,7 @@ end
 function GetKeystoneData ()
 	-- Prepare
 	local tuesdays = math.floor((GetServerTime() + KEYED_TUESDAY) / KEYED_WEEK)
-	local name, dungeon, level, id
+	local name, dungeon, level, id, affexes
 	local number = 0
 	local data = {}
 
@@ -109,7 +115,7 @@ function GetKeystoneData ()
 	if Keyed and Keyed.db.factionrealm then
 		for uid, entry in pairs (Keyed.db.factionrealm) do
 			if entry.uid and entry.name and entry.name ~= "" and entry.keystones and (#entry.keystones > 0) then
-				name, dungeon, level, id = ExtractKeystoneData (entry.keystones[1])
+				name, dungeon, level, id, affexes = ExtractKeystoneData (entry.keystones[1])
 				if math.floor((entry.time + KEYED_TUESDAY) / KEYED_WEEK) == tuesdays then
 					number = number + 1
 					table.insert (data, {
@@ -117,6 +123,7 @@ function GetKeystoneData ()
 						dungeon = dungeon,
 						dungeonId = tonumber(id),
 						level = tonumber(level),
+						depleted = (bit.band(affexes, KEYED_DEPLETED_MASK) ~= KEYED_DEPLETED_MASK),
 						link = entry.keystones[1]
 					})
 				end
@@ -138,11 +145,11 @@ end
 function ExtractKeystoneData (hyperlink)
 	-- |cffa335ee|Hitem:138019::::::::110:63:6160384:::1466:7:5:4:1:::|h[Mythic Keystone]|h|r
 	local _, color, string, name, _, _ = strsplit ("|", hyperlink, 6)
-	local Hitem, id, _, _, _, _, _, _, _, reqLevel, _, _, _, _, instMapId, plus, _, _, _, _, _ = strsplit(':', string, 21)
+	local Hitem, id, _, _, _, _, _, _, _, reqLevel, _, affexes, _, _, instMapId, plus, _, _, _, _, _ = strsplit(':', string, 21)
 	-- Return Tom foolery for now...
 	local instanceName = "Unknown (" .. instMapId .. ")"
 	if INSTANCE_NAMES[tostring(instMapId)] then instanceName = INSTANCE_NAMES[tostring(instMapId)] end
-	return name, instanceName, plus, instMapId
+	return name, instanceName, plus, instMapId, affexes
 end
 
 function Keyed_SortKeyed (sort)
@@ -193,7 +200,8 @@ function Keyed_SortByLevel (a, b)
 end
 
 function KeyedMinimapButtonReposition()
-	KeyedMinimapButton:SetPoint("TOPLEFT","Minimap","TOPLEFT",52-(80*cos(Keyed.db.profile.MinimapPos)),(80*sin(Keyed.db.profile.MinimapPos))-52)
+	local angle = Keyed.db.profile.minimapAngle
+	KeyedMinimapButton:SetPoint("TOPLEFT","Minimap","TOPLEFT",52-(80*cos(angle)),(80*sin(Keyedangle))-52)
 end
 
 function KeyedFrame_ToggleMinimap(self, checked)
@@ -215,12 +223,12 @@ function KeyedMinimapButtonDraggingFrameOnUpdate()
 	xpos = xmin-xpos/UIParent:GetScale()+70 -- get coordinates as differences from the center of the minimap
 	ypos = ypos/UIParent:GetScale()-ymin-70
 
-	Keyed.db.profile.MinimapPos = math.deg(math.atan2(ypos,xpos)) -- save the degrees we are relative to the minimap center
+	Keyed.db.profile.minimapAngle = math.deg(math.atan2(ypos,xpos)) -- save the degrees we are relative to the minimap center
 	KeyedMinimapButtonReposition() -- move the button
 end
 
 -- Put your code that you want on a minimap button click here.  arg1="LeftButton", "RightButton", etc
-function KeyedMinimapButtonOnClick()
+function KeyedMinimapButton_OnClick()
 	KeystoneList_Update()
 	KeyedFrame:Show()
 end

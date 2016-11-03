@@ -4,7 +4,7 @@ Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0
 -- Default Profile
 local defaults = {
 	profile = {
-		MinimapPos = 45,
+		minimapAngle = 45,
 		showMinimapButton = 1
 	},
 	factionrealm = {

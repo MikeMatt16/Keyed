@@ -298,7 +298,7 @@
     </Anchors>
     <Layers>
       <Layer level="BACKGROUND">
-        <Texture name="KeyedMinimapButtonIcon" file="Interface\Icons\INV_Relics_Hourglass">
+        <Texture name="KeyedMinimapButtonIcon" file="Interface\AddOns\Keyed\Textures\Keyed-Portrait">
           <Size>
             <AbsDimension x="21" y="21"/>
           </Size>
@@ -345,7 +345,7 @@
         KeyedMinimapButtonDraggingFrame:Hide()
       </OnDragStop>
       <OnClick>
-        KeyedMinimapButtonOnClick() -- do your thing in here, arg1 is mouse button clicked
+        KeyedMinimapButton_OnClick()
       </OnClick>
     </Scripts>
     <HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
