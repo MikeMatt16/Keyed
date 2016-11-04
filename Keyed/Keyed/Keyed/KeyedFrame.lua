@@ -1,4 +1,5 @@
 ﻿KEYED_TUESDAY = 345600
+KEYED_DAY = 86400
 KEYED_WEEK = 604800
 KEYED_DEPLETED_MASK = 4194304
 KEYED_FRAME_PLAYER_HEIGHT = 16
@@ -82,7 +83,7 @@ function KeystoneList_Update ()
 		button = _G["KeystoneListFrameButton" .. i]
 		button.keystoneIndex = keystoneIndex
 		button.link = nil
-		if keystoneIndex < #keystoneData then
+		if keystoneIndex <= #keystoneData then
 			button.link = keystoneData[keystoneIndex].link
 			button.depleted = keystoneData[keystoneIndex].depleted
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Name"];
@@ -121,7 +122,7 @@ end
 
 function GetKeystoneData ()
 	-- Prepare
-	local tuesdays = math.floor((GetServerTime() + KEYED_TUESDAY) / KEYED_WEEK)
+	local tuesdays = math.floor((GetServerTime() - KEYED_DAY) / KEYED_WEEK)
 	local name, dungeon, level, id, affexes
 	local number = 0
 	local data = {}
@@ -131,7 +132,7 @@ function GetKeystoneData ()
 		for uid, entry in pairs (Keyed.db.factionrealm) do
 			if entry.uid and entry.name and entry.name ~= "" and entry.keystones and (#entry.keystones > 0) then
 				name, dungeon, level, id, affexes = ExtractKeystoneData (entry.keystones[1])
-				if math.floor((entry.time + KEYED_TUESDAY) / KEYED_WEEK) == tuesdays then
+				if math.floor((entry.time - KEYED_DAY) / KEYED_WEEK) == tuesdays or true then
 					number = number + 1
 					table.insert (data, {
 						name = entry.name,
