@@ -42,6 +42,7 @@
         if self.link then
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:SetHyperlink(self.link)
+        GameTooltip:AddLine("|cff38d14fClick to create link|r")
         GameTooltip:Show()
         end
       </OnEnter>
@@ -234,6 +235,35 @@
             <Scripts>
               <OnClick>
                 KeyedFrame_ToggleMinimap(self, self:GetChecked())
+              </OnClick>
+            </Scripts>
+            <NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>
+            <PushedTexture file="Interface\Buttons\UI-CheckBox-Down"/>
+            <HighlightTexture file="Interface\Buttons\UI-CheckBox-Highlight" alphaMode="ADD"/>
+            <CheckedTexture name="$parentCheckedTexture" file="Interface\Buttons\UI-CheckBox-Check"/>
+            <DisabledCheckedTexture file="Interface\Buttons\UI-CheckBox-Check-Disabled"/>
+          </CheckButton>
+          <CheckButton name="KeyedFrameShowOutOfDateButton" checked="false">
+            <Size x="24" y="24" />
+            <Anchors>
+              <Anchor point="LEFT" relativeTo="KeyedFrameGetKeystonesButton" relativePoint="RIGHT" x="5s" y="0" />
+            </Anchors>
+            <HitRectInsets>
+              <AbsInset left="0" right="0" top="0" bottom="8"/>
+            </HitRectInsets>
+            <Layers>
+              <Layer level="BORDER">
+                <FontString inherits="GameFontNormalSmall" justifyH="LEFT" text="Out of date keystones">
+                  <Size x="0" y="14"/>
+                  <Anchors>
+                    <Anchor point="LEFT" x="26" y="0"/>
+                  </Anchors>
+                </FontString>
+              </Layer>
+            </Layers>
+            <Scripts>
+              <OnClick>
+                KeyedFrame_ToggleOutOfDate(self, self:GetChecked())
               </OnClick>
             </Scripts>
             <NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>

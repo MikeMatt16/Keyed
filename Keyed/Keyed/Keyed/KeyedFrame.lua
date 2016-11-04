@@ -1,6 +1,7 @@
 ﻿KEYED_TUESDAY = 345600
 KEYED_DAY = 86400
 KEYED_WEEK = 604800
+KEYED_OOD = false
 KEYED_DEPLETED_MASK = 4194304
 KEYED_FRAME_PLAYER_HEIGHT = 16
 KEYSTONES_TO_DISPLAY = 19
@@ -64,6 +65,7 @@ function KeystoneList_Update ()
 	local keystoneOffset = FauxScrollFrame_GetOffset (KeystoneListScrollFrame)
 	local keystoneIndex
 	local showScrollBar = nil;
+	local level = ""
 	if numKeystones > KEYSTONES_TO_DISPLAY then
 		showScrollBar = 1
 	end
@@ -84,22 +86,26 @@ function KeystoneList_Update ()
 		button.keystoneIndex = keystoneIndex
 		button.link = nil
 		if keystoneIndex <= #keystoneData then
+			button.playerName = keystoneData[keystoneIndex].name
+			button.dungeon = keystoneData[keystoneIndex].dungeon
+			button.level = tostring(keystoneData[keystoneIndex].level)
 			button.link = keystoneData[keystoneIndex].link
 			button.depleted = keystoneData[keystoneIndex].depleted
+			button.ood = keystoneData[keystoneIndex].ood
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Name"];
-			buttonText:SetText (keystoneData[keystoneIndex].name);
-			if button.depleted then SetDepleted(buttonText) else SetNormal(buttonText) end
+			buttonText:SetText (button.playerName);
+			if button.depleted or button.ood then SetDepleted(buttonText) else SetNormal(buttonText) end
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Dungeon"];
-			buttonText:SetText (keystoneData[keystoneIndex].dungeon);
-			if button.depleted then SetDepleted(buttonText) else SetHighlighted(buttonText) end
+			buttonText:SetText (button.dungeon);
+			if button.depleted or button.ood then SetDepleted(buttonText) else SetHighlighted(buttonText) end
 			if showScrollBar then
 				buttonText:SetWidth (170)
 			else
 				buttonText:SetWidth (185)
 			end
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Level"];
-			buttonText:SetText (keystoneData[keystoneIndex].level);
-			if button.depleted then SetDepleted(buttonText) else SetHighlighted(buttonText) end
+			buttonText:SetText (button.level);
+			if button.depleted or button.ood then SetDepleted(buttonText) else SetHighlighted(buttonText) end
 			button:Show()
 		else
 			button:Hide()
@@ -122,24 +128,27 @@ end
 
 function GetKeystoneData ()
 	-- Prepare
-	local tuesdays = math.floor((GetServerTime() - KEYED_DAY) / KEYED_WEEK)
-	local name, dungeon, level, id, affexes
+	local tuesdays = math.floor((GetServerTime() + KEYED_TUESDAY) / KEYED_WEEK)
+	local name, dungeon, level, id, affixes
 	local number = 0
 	local data = {}
+	local ood = false
 
 	-- Loop through database
 	if Keyed and Keyed.db.factionrealm then
 		for uid, entry in pairs (Keyed.db.factionrealm) do
 			if entry.uid and entry.name and entry.name ~= "" and entry.keystones and (#entry.keystones > 0) then
-				name, dungeon, level, id, affexes = ExtractKeystoneData (entry.keystones[1])
-				if math.floor((entry.time - KEYED_DAY) / KEYED_WEEK) == tuesdays or true then
+				name, dungeon, level, id, affixes = ExtractKeystoneData (entry.keystones[1])
+				ood = math.floor((entry.time + KEYED_TUESDAY) / KEYED_WEEK) < tuesdays
+				if not ood or KEYED_OOD then
 					number = number + 1
 					table.insert (data, {
 						name = entry.name,
 						dungeon = dungeon,
 						dungeonId = tonumber(id),
 						level = tonumber(level),
-						depleted = (bit.band(affexes, KEYED_DEPLETED_MASK) ~= KEYED_DEPLETED_MASK),
+						depleted = (bit.band(affixes, KEYED_DEPLETED_MASK) ~= KEYED_DEPLETED_MASK),
+						ood = ood,
 						link = entry.keystones[1]
 					})
 				end
@@ -161,11 +170,11 @@ end
 function ExtractKeystoneData (hyperlink)
 	-- |cffa335ee|Hitem:138019::::::::110:63:6160384:::1466:7:5:4:1:::|h[Mythic Keystone]|h|r
 	local _, color, string, name, _, _ = strsplit ("|", hyperlink, 6)
-	local Hitem, id, _, _, _, _, _, _, _, reqLevel, _, affexes, _, _, instMapId, plus, _, _, _, _, _ = strsplit(':', string, 21)
-	-- Return Tom foolery for now...
+	local Hitem, id, _, _, _, _, _, _, _, reqLevel, _, affixes, _, _, instMapId, plus, _, _, _, _, _ = strsplit(':', string, 21)
+	
 	local instanceName = "Unknown (" .. instMapId .. ")"
 	if INSTANCE_NAMES[tostring(instMapId)] then instanceName = INSTANCE_NAMES[tostring(instMapId)] end
-	return name, instanceName, plus, instMapId, affexes
+	return name, instanceName, plus, instMapId, affixes
 end
 
 function Keyed_SortKeyed (sort)
@@ -192,27 +201,52 @@ function Keyed_SortKeyed (sort)
 end
 
 function Keyed_SortByName (a, b)
-	if KEYED_SORT_ORDER_DESCENDING then
-		return a.name > b.name
-	else
-		return a.name < b.name
+	local result = a.name > b.name			-- Compare by name first...
+	if a.name == b.name then
+		result = a.level < b.level			-- ... if name is same, compare by level...
+		if a.level == b.level then
+			result = a.dungeon > b.name		-- ... if level is same, compare by dungeon...
+		end
 	end
+
+	-- Descend?
+	if not KEYED_SORT_ORDER_DESCENDING then result = not result end
+	return result
 end
 
 function Keyed_SortByDungeon (a, b)
-	if KEYED_SORT_ORDER_DESCENDING then
-		return a.dungeon > b.dungeon
-	else
-		return a.dungeon < b.dungeon
+	local result = a.dungeon > b.dungeon	-- Compare by dungeon first...
+	if a.dungeon == b.dungeon then
+		result = a.level < b.level			-- ... if dungeon is same, compare by level ...
+		if a.level == b.level then
+			result = a.name > b.name		-- ... if level is same, compare by name ...
+		end
 	end
+
+	-- Descend?
+	if not KEYED_SORT_ORDER_DESCENDING then result = not result end
+	return result
 end
 
 function Keyed_SortByLevel (a, b)
-	if KEYED_SORT_ORDER_DESCENDING then
-		return a.level < b.level
-	else
-		return a.level > b.level
+	local result = a.level < b.level	-- Compare by level first...
+	if a.level == b.level then
+		result = a.name > b.name				-- ... if level is same, compare by name...
+		if a.name == b.name then
+			result = a.dungeon > b.dungeon		-- ... if name is same, compare by dungeon
+		end
 	end
+
+	-- Descend?
+	if not KEYED_SORT_ORDER_DESCENDING then result = not result end
+	return result
+end
+
+function KeyedFrame_ToggleOutOfDate(self, checked)
+	-- Set
+	local update = KEYED_OOD ~= checked
+	KEYED_OOD = checked
+	if update then KeystoneList_Update() end
 end
 
 function KeyedFrame_ToggleMinimap(self, checked)
