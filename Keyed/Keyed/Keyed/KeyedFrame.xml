@@ -201,8 +201,8 @@
             <Scripts>
               <OnClick function="KeyedFrameGetKeystonesButton_OnClick"/>
               <OnUpdate>
-                if KEYED_FRAME_KEYSTONES_BUTTON_PRESSED then
-                  if (GetServerTime() - KEYED_FRAME_KEYSTONES_BUTTON_PRESSED) > 4 then
+                if KEYED_BROADCAST then
+                  if (GetServerTime() - KEYED_BROADCAST) > 4 then
                     self:Enable()
                   else
                     self:Disable()
@@ -224,7 +224,7 @@
             <Layers>
               <Layer level="BORDER">
                 <FontString inherits="GameFontNormalSmall" justifyH="LEFT" text="Enable Minimap Button">
-                  <Size x="120" y="14"/>
+                  <Size x="0" y="14"/>
                   <Anchors>
                     <Anchor point="LEFT" x="26" y="0"/>
                   </Anchors>
@@ -288,5 +288,8 @@
         </Scripts>
       </Frame>
     </Frames>
+    <Scripts>
+      <OnShow function="KeyedFrame_OnShow"/>
+    </Scripts>
   </Frame>
 </Ui>

@@ -1,7 +1,6 @@
 ﻿KEYED_TUESDAY = 345600
 KEYED_WEEK = 604800
 KEYED_DEPLETED_MASK = 4194304
-KEYED_FRAME_KEYSTONES_BUTTON_PRESSED = 0
 KEYED_FRAME_PLAYER_HEIGHT = 16
 KEYSTONES_TO_DISPLAY = 19
 KEYED_SORT_ORDER_DESCENDING = false
@@ -25,7 +24,15 @@ INSTANCE_NAMES = {
 	["1544"] = "Violet Hold",
 }
 
+function KeyedFrame_OnShow (self)
+	-- Get Keystones...
+	Keyed:BroadcastKeystoneRequest(true)
+end
+
 function KeystoneListFrame_OnLoad (self)
+	-- Register for events...
+	KeyedFrame:RegisterAllEvents()
+
 	-- Create List Items
 	for i = 2, KEYSTONES_TO_DISPLAY do
 		local button = CreateFrame ("Button", "KeystoneListFrameButton" .. i, KeystoneListFrame, "KeyedFramePlayerButtonTemplate")
@@ -38,14 +45,13 @@ function KeystoneListFrame_OnLoad (self)
 	if version then KeyedVersionText:SetText("v" .. version) end
 
 	-- Get Keystones...
-	Keyed:BroadcastKeystoneRequest()
+	Keyed:BroadcastKeystoneRequest(true)
 end
 
 function KeyedFrameGetKeystonesButton_OnClick()
 	-- Request...
 	if Keyed then
 		Keyed:BroadcastKeystoneRequest()
-		KEYED_FRAME_KEYSTONES_BUTTON_PRESSED = GetServerTime()
 	end
 end
 

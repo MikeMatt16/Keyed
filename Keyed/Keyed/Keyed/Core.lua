@@ -1,5 +1,6 @@
 -- Initialize our Ace3 AddOn
 Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0", "AceComm-3.0")
+KEYED_BROADCAST = 0
 
 -- Default Profile
 local defaults = {
@@ -103,9 +104,14 @@ function Keyed:SendResponse(playerName, response)
 	Keyed:SendCommMessage(prefix, response, "WHISPER", playerName)
 end
 
-function Keyed:BroadcastKeystoneRequest()
-	print(KeyedName, "Updating keystone database...")
-	Keyed:SendCommMessage(prefix, "request;" .. keystoneRequest, "GUILD")
+function Keyed:BroadcastKeystoneRequest (silent)
+	if (GetServerTime() - KEYED_BROADCAST) > 4 then
+		if not silent then print(KeyedName, "Updating keystone database...") end
+		Keyed:SendCommMessage(prefix, "request;" .. keystoneRequest, "GUILD")
+		KEYED_BROADCAST = GetServerTime()
+	elseif not silent then
+		print(KeyedName, "You must wait before requesting keystones again.")
+	end
 end
 
 function Keyed:SendKeystoneRequest(playerName)
