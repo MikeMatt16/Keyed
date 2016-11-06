@@ -20,7 +20,7 @@ local defaults = {
 }
 
 local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
-	type = "data source",
+	type = "launcher",
 	text = "Keyed",
 	icon = "Interface\\AddOns\\Keyed\\Textures\\Keyed-Portrait",
 	OnClick = function()

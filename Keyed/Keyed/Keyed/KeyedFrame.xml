@@ -2,7 +2,7 @@
     http://wowprogramming.com/FrameXML/UI.xsd">
   <Script file="KeyedFrame.lua" />
 
-  <Button name="KeyedFramePlayerButtonTemplate" virtual="true">
+  <Button name="KeyedFramePlayerButtonTemplate" hidden="true" virtual="true">
     <Size x="298" y="16"/>
     <Layers>
       <Layer level="BORDER">
@@ -39,10 +39,13 @@
         PlaySound("igMainMenuOptionCheckBoxOn");
       </OnClick>
       <OnEnter>
+        local textColor = "|cff38d14f"
         if self.link then
+        if self.depleted then textColor = "|cffe22d1d"
+        elseif self.ood then textColor = "|cff7c7c7c" end
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:SetHyperlink(self.link)
-        GameTooltip:AddLine("|cff38d14fClick to create link|r")
+        GameTooltip:AddLine("\r\n" .. textColor .. "Click to link " .. self.playerName .. "'s keystone|r")
         GameTooltip:Show()
         end
       </OnEnter>
