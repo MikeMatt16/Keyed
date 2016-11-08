@@ -34,6 +34,7 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 	end,
 })
 KeyedMinimapButton = LibStub("LibDBIcon-1.0")
+local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
 
 local KeystoneId = 138019
 local prefix = "KEYED_13"
@@ -76,9 +77,9 @@ function Keyed:Options(input)
 			end
 		elseif Arguments[1] == "version" then
 			local version = GetAddOnMetadata("Keyed", "Version")
-			if version then print(KeyedName, "Version", version) end
+			if version then print(KeyedName, L["Version"], version) end
 		elseif Arguments[1] == "print" and (Arguments[2] == "db" or Arguments[2] == "database") then
-				print(KeyedName, "Keystones in database:")
+				print(KeyedName, L["Keystones in database:"])
 				for uid, entry in pairs(self.db.factionrealm) do
 				for i = 1, #entry.keystones do
 					print(KeyedName, entry.name, "(" .. i .. "/" .. #entry.keystones .. ")", entry.keystones[i])
@@ -88,14 +89,14 @@ function Keyed:Options(input)
 			if Arguments[2] == "db" or Arguments[2] == "database" then
 				table.wipe(self.db.factionrealm)
 				self.db.factionrealm = defaults.factionrealm
-				print(KeyedName, "Wiped database...")
-				print("  Please reload your UI to continue...")
+				print(KeyedName, L["Wiped database..."])
+				print("  " .. L["Please reload your UI to continue..."])
 			else
 				self.db.factionrealm[Arguments[2]] = nil
-				print(KeyedName, "Wiped", Arguments[2])
+				print(KeyedName, L["Wiped"], Arguments[2])
 			end
 		else
-			print(KeyedName, "Incorrect usage...")
+			print(KeyedName, L["Incorrect usage..."])
 		end
 	end
 end
@@ -106,11 +107,11 @@ end
 
 function Keyed:BroadcastKeystoneRequest (silent)
 	if (GetServerTime() - KEYED_BROADCAST) > 4 then
-		if not silent then print(KeyedName, "Updating keystone database...") end
+		if not silent then print(KeyedName, L["Updating keystone database..."]) end
 		Keyed:SendCommMessage(prefix, "request;" .. keystoneRequest, "GUILD")
 		KEYED_BROADCAST = GetServerTime()
 	elseif not silent then
-		print(KeyedName, "You must wait before requesting keystones again.")
+		print(KeyedName, L["You must wait before requesting keystones again."])
 	end
 end
 

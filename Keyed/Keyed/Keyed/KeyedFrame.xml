@@ -164,45 +164,59 @@
       </Frame>
       <Frame name="KeystoneListFrame" setAllPoints="true">
         <Frames>
-          <Button name="KeyedFrameColumnHeader1" inherits="KeyedFrameColumnHeaderTemplate" text="Name">
+          <Button name="KeyedFrameColumnHeader1" inherits="KeyedFrameColumnHeaderTemplate">
             <Anchors>
               <Anchor point="TOPLEFT" x="7" y="-57" />
             </Anchors>
             <Scripts>
               <OnLoad>
+                -- Load Locale...
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
+                self:SetText(L["Name"])
                 KeyedFrameColumn_SetWidth(self, 94)
                 self.sortType = "name"
               </OnLoad>
             </Scripts>
           </Button>
-          <Button name="KeyedFrameColumnHeader2" inherits="KeyedFrameColumnHeaderTemplate" text="Dungeon">
+          <Button name="KeyedFrameColumnHeader2" inherits="KeyedFrameColumnHeaderTemplate">
             <Anchors>
               <Anchor point="LEFT" relativeTo="KeyedFrameColumnHeader1" relativePoint="RIGHT" x="-2" y="0" />
             </Anchors>
             <Scripts>
               <OnLoad>
+                -- Load Locale...
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
+                self:SetText(L["Dungeon"])
                 KeyedFrameColumn_SetWidth(self, 175)
                 self.sortType = "dungeon"
               </OnLoad>
             </Scripts>
           </Button>
-          <Button name="KeyedFrameColumnHeader3" inherits="KeyedFrameColumnHeaderTemplate" text="Lvl">
+          <Button name="KeyedFrameColumnHeader3" inherits="KeyedFrameColumnHeaderTemplate">
             <Anchors>
               <Anchor point="LEFT" relativeTo="KeyedFrameColumnHeader2" relativePoint="RIGHT" x="-2" y="0" />
             </Anchors>
             <Scripts>
               <OnLoad>
+                -- Load Locale...
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
+                self:SetText(L["Lvl"])
                 KeyedFrameColumn_SetWidth(self, 32)
                 self.sortType = "level"
               </OnLoad>
             </Scripts>
           </Button>
-          <Button name="KeyedFrameGetKeystonesButton" inherits="UIPanelButtonTemplate" text="Get Keystones">
+          <Button name="KeyedFrameGetKeystonesButton" inherits="UIPanelButtonTemplate">
             <Size x="131" y="21"/>
             <Anchors>
               <Anchor point="BOTTOMLEFT" relativeTo="KeyedFrame" x="4" y="4"/>
             </Anchors>
             <Scripts>
+              <OnLoad>
+                -- Load Locale...
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
+                self:SetText(L["Get Keystones"])
+              </OnLoad>
               <OnClick function="KeyedFrameGetKeystonesButton_OnClick"/>
               <OnUpdate>
                 if KEYED_BROADCAST then
@@ -227,7 +241,7 @@
             </HitRectInsets>
             <Layers>
               <Layer level="BORDER">
-                <FontString inherits="GameFontNormalSmall" justifyH="LEFT" text="Enable Minimap Button">
+                <FontString name="KeyedFrameShowMinimapButtonText" inherits="GameFontNormalSmall" justifyH="LEFT">
                   <Size x="0" y="14"/>
                   <Anchors>
                     <Anchor point="LEFT" x="26" y="0"/>
@@ -236,6 +250,11 @@
               </Layer>
             </Layers>
             <Scripts>
+              <OnLoad>
+                -- Load Locale...
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
+                KeyedFrameShowMinimapButtonText:SetText(L["Enable Minimap Button"])
+              </OnLoad>
               <OnClick>
                 KeyedFrame_ToggleMinimap(self, self:GetChecked())
               </OnClick>
@@ -256,7 +275,7 @@
             </HitRectInsets>
             <Layers>
               <Layer level="BORDER">
-                <FontString inherits="GameFontNormalSmall" justifyH="LEFT" text="Out of date keystones">
+                <FontString name="KeyedFrameShowOutOfDateButtonText" inherits="GameFontNormalSmall" justifyH="LEFT" text="Out of date keystones">
                   <Size x="0" y="14"/>
                   <Anchors>
                     <Anchor point="LEFT" x="26" y="0"/>
@@ -265,6 +284,11 @@
               </Layer>
             </Layers>
             <Scripts>
+              <OnLoad>
+                -- Load Locale...
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
+                KeyedFrameShowOutOfDateButtonText:SetText(L["Out of date keystones"])
+              </OnLoad>
               <OnClick>
                 KeyedFrame_ToggleOutOfDate(self, self:GetChecked())
               </OnClick>

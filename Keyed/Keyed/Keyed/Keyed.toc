@@ -1,10 +1,11 @@
 ## Interface: 70100
 ## Author: Michael Mattera
-## Version: 1.4.9
+## Version: 1.4.10
 ## Title: |cffd6266cKeyed|r
 ## Notes: Browse guild's Mythic+ Keystones
 ## SavedVariables: Keyedv2DB
 
 References.xml
+Locales.xml
 Core.lua
 KeyedFrame.xml

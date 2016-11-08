@@ -8,22 +8,24 @@ KEYSTONES_TO_DISPLAY = 19
 KEYED_SORT_ORDER_DESCENDING = false
 KEYED_SORT_FUNCTION = Keyed_SortByLevel
 KEYED_SORT_TYPE = "level"
+
+-- Load Locale...
+local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
 INSTANCE_NAMES = {
 	-- Raids
-	["1520"] = "The Emerald Nightmare",
-	["1530"] = "The Nighthold",
+	["1520"] = L["The Emerald Nightmare"],
+	["1530"] = L["The Nighthold"],
 
 	-- Dungeons
-	["1501"] = "Black Rook Hold",
-	["1571"] = "Court of Stars",
-	["1466"] = "Darkheart Thicket",
-	["1456"] = "Eye of Azshara",
-	["1477"] = "Halls of Valor",
-	["1492"] = "Maw of Souls",
-	["1458"] = "Neltharion's Lair",
-	["1516"] = "The Arcway",
-	["1493"] = "Vault of the Wardens",
-	["1544"] = "Violet Hold",
+	["1501"] = L["Black Rook Hold"],
+	["1571"] = L["Court of Stars"],
+	["1466"] = L["Darkheart Thicket"],
+	["1456"] = L["Eye of Azshara"],
+	["1477"] = L["Halls of Valor"],
+	["1492"] = L["Maw of Souls"],
+	["1458"] = L["Neltharion's Lair"],
+	["1516"] = L["The Arcway"],
+	["1493"] = L["Vault of the Wardens"],
 }
 
 function KeyedFrame_OnShow (self)
@@ -172,7 +174,7 @@ function ExtractKeystoneData (hyperlink)
 	local _, color, string, name, _, _ = strsplit ("|", hyperlink, 6)
 	local Hitem, id, _, _, _, _, _, _, _, reqLevel, _, affixes, _, _, instMapId, plus, _, _, _, _, _ = strsplit(':', string, 21)
 	
-	local instanceName = "Unknown (" .. instMapId .. ")"
+	local instanceName = L["Unknown"] .. " (" .. instMapId .. ")"
 	if INSTANCE_NAMES[tostring(instMapId)] then instanceName = INSTANCE_NAMES[tostring(instMapId)] end
 	return name, instanceName, plus, instMapId, affixes
 end

@@ -18,10 +18,12 @@
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceConsole-3.0\AceConsole-3.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceDB-3.0\AceDB-3.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceHook-3.0\AceHook-3.0.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceLocale-3.0\AceLocale-3.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibDBIcon-1.0\LibDBIcon-1.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibStub\LibStub.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Locales\enUS.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Textures\Keyed-Portrait.blp" />
   </ItemGroup>
   <ItemGroup>
@@ -31,8 +33,10 @@
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceConsole-3.0\AceConsole-3.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceDB-3.0\AceDB-3.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceHook-3.0\AceHook-3.0.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\AceLocale-3.0\AceLocale-3.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibDBIcon-1.0\lib.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)Keyed\Locales.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Keyed\References.xml" />
   </ItemGroup>
 </Project>
