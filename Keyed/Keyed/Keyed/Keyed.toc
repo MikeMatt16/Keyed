@@ -6,6 +6,5 @@
 ## SavedVariables: Keyedv2DB
 
 References.xml
-Locales.xml
 Core.lua
 KeyedFrame.xml

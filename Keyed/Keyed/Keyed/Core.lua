@@ -106,12 +106,14 @@ function Keyed:SendResponse(playerName, response)
 end
 
 function Keyed:BroadcastKeystoneRequest (silent)
-	if (GetServerTime() - KEYED_BROADCAST) > 4 then
-		if not silent then print(KeyedName, L["Updating keystone database..."]) end
-		Keyed:SendCommMessage(prefix, "request;" .. keystoneRequest, "GUILD")
-		KEYED_BROADCAST = GetServerTime()
-	elseif not silent then
-		print(KeyedName, L["You must wait before requesting keystones again."])
+	if GetGuildInfo("player") then
+		if (GetServerTime() - KEYED_BROADCAST) > 4 then
+			if not silent then print(KeyedName, L["Updating keystone database..."]) end
+			Keyed:SendCommMessage(prefix, "request;" .. keystoneRequest, "GUILD")
+			KEYED_BROADCAST = GetServerTime()
+		elseif not silent then
+			print(KeyedName, L["You must wait before requesting keystones again."])
+		end
 	end
 end
 

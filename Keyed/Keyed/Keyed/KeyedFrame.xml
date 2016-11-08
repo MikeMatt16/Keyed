@@ -39,13 +39,15 @@
         PlaySound("igMainMenuOptionCheckBoxOn");
       </OnClick>
       <OnEnter>
+        -- Load Locale...
+        local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
         local textColor = "|cff38d14f"
         if self.link then
         if self.depleted then textColor = "|cffe22d1d"
         elseif self.ood then textColor = "|cff7c7c7c" end
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:SetHyperlink(self.link)
-        GameTooltip:AddLine("\r\n" .. textColor .. "Click to link " .. self.playerName .. "'s keystone|r")
+        GameTooltip:AddLine("\r\n" .. textColor .. L["Click to link keystone"]:gsub("$player", self.playerName) .. "|r")
         GameTooltip:Show()
         end
       </OnEnter>
