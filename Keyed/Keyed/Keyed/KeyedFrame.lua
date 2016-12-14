@@ -1,6 +1,7 @@
-﻿KEYED_TUESDAY = 345600
-KEYED_DAY = 86400
-KEYED_WEEK = 518400
+﻿KEYED_WEEK = 604800				-- 7 Days
+KEYED_RESET_NA = 1467712800		-- Tue, 05 Jul 2016 00:00:00 GMT
+KEYED_RESET_OC = 1467752400		-- Tue, 05 Jul 2016 11:00:00 GMT !!!UNTESTED (Also unused)!!!
+KEYED_RESET_EU = 1467799200		-- Mon, 06 Jul 2016 10:00:00 GMT !!!UNTESTED (Also unused)!!!
 KEYED_OOD = false
 KEYED_DEPLETED_MASK = 4194304
 KEYED_FRAME_PLAYER_HEIGHT = 16
@@ -130,7 +131,10 @@ end
 
 function GetKeystoneData ()
 	-- Prepare
-	local tuesdays = math.floor((GetServerTime() + KEYED_TUESDAY) / KEYED_WEEK)
+	local keyedReset = KEYED_RESET_NA
+	local keyedWeek = KEYED_WEEK
+
+	local tuesdays = math.floor((GetServerTime() - keyedReset) / keyedWeek)
 	local name, dungeon, level, id, affixes
 	local number = 0
 	local data = {}
@@ -141,7 +145,7 @@ function GetKeystoneData ()
 		for uid, entry in pairs (Keyed.db.factionrealm) do
 			if entry.uid and entry.name and entry.name ~= "" and entry.keystones and (#entry.keystones > 0) then
 				name, dungeon, level, id, affixes = ExtractKeystoneData (entry.keystones[1])
-				ood = math.floor((entry.time + KEYED_TUESDAY) / KEYED_WEEK) < tuesdays
+				ood = math.floor((entry.time - keyedReset) / keyedWeek) < tuesdays
 				if not ood or KEYED_OOD then
 					number = number + 1
 					table.insert (data, {

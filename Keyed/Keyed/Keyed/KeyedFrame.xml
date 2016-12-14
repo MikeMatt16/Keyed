@@ -45,7 +45,7 @@
         if self.link then
         if self.depleted then textColor = "|cffe22d1d"
         elseif self.ood then textColor = "|cff7c7c7c" end
-        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT", 0, -KEYED_FRAME_PLAYER_HEIGHT)
         GameTooltip:SetHyperlink(self.link)
         GameTooltip:AddLine("\r\n" .. textColor .. L["Click to link keystone"]:gsub("$player", self.playerName) .. "|r")
         GameTooltip:Show()
@@ -112,7 +112,7 @@
   </Button>
   <Frame name="KeyedFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" inherits="PortraitFrameTemplate">
     <Anchors>
-      <Anchor point="TOP" x="0" y="-50" />
+      <Anchor point="TOPLEFT" x="280" y="-80" />
     </Anchors>
     <Layers>
       <Layer level="BORDER" textureSubLevel="1">

@@ -29,8 +29,7 @@ L["Neltharion's Lair"] = "奈薩里奧巢穴"
 L["The Arcway"] = "幽暗地道"
 L["Vault of the Wardens"] = "看守者鐵獄"
 L["Assault on Violet Hold"] = "紫羅蘭堡之襲"
-L["Click to link keystone"] = "點一下建立『$player』的鑰石連結" -- Not 100% on the accuracy of this one...
-
--- Unused but leaving here for reference
-L["Click to link keystone"] = "點一下建立『"
-L["Click to link"] = "點一下建立『 $player 』的鑰石連結"
+L["Click to link keystone"] = "點一下建立 $player 的鑰石連結"
+L["Americas"] = "Americas"
+L["EU"] = "EU"
+L["Oceanic"] = "Oceanic"

@@ -5,6 +5,7 @@ KEYED_BROADCAST = 0
 -- Default Profile
 local defaults = {
 	profile = {
+		region = "Americas",
 		minimap = {
 			hide = false,
 		},
