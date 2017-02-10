@@ -14,6 +14,7 @@ local defaults = {
 		["*"] = {
 			name = "",
 			guid = nil,
+			class = "PALADIN",
 			time = 0,
 			keystones = {}
 		}
@@ -38,7 +39,7 @@ KeyedMinimapButton = LibStub("LibDBIcon-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
 
 local KeystoneId = 138019
-local prefix = "KEYED_13"
+local prefix = "KEYED_16"
 local KeyedName = "|cffd6266cKeyed|r"
 local keystoneRequest = "keystones"
 local playerKeystoneRequest = "playerkeystone"
@@ -50,7 +51,7 @@ function Keyed:OnInitialize()
 	KeystoneListFrame:RegisterForDrag("LeftButton")
 
 	-- Load Database
-	self.db = LibStub("AceDB-3.0"):New("Keyedv2DB", defaults)
+	self.db = LibStub("AceDB-3.0"):New("Keyedv3DB", defaults)
 
 	-- Register Minimap Button
 	KeyedMinimapButton:Register("Keyed", keyedLDB, self.db.profile.minimap)
@@ -130,6 +131,7 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 	local time = 0
 	local player = ""
 	local uid = ""
+	local classFileName = ""
 
 	-- Handle...
 	if arguments[1] == "request" then
@@ -140,7 +142,8 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 	elseif arguments[1] == keystoneRequest then
 		player = arguments[2]
 		uid = arguments[3]
-		time = tonumber(arguments[4])
+		classFileName = arguments[4]
+		time = tonumber(arguments[5])
 		for i = 5, #arguments do
 			if not self:isempty(arguments[i]) then
 				name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(arguments[i])
@@ -153,6 +156,7 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 			self.db.factionrealm[uid].time = time
 			self.db.factionrealm[uid].name = player
 			self.db.factionrealm[uid].uid = uid
+			self.db.factionrealm[uid].class = classFileName
 			table.wipe(self.db.factionrealm[uid].keystones)
 			for i = 1, #keystones do
 				table.insert(self.db.factionrealm[uid].keystones, keystones[i])
@@ -170,7 +174,7 @@ function Keyed:SendEntries(target)
 	local message = ""
 	for playerName, entry in pairs(self.db.factionrealm) do
 		if playerName ~= name then
-			message = keystoneRequest .. ";"  .. entry.name .. ";" .. entry.uid .. ";" .. tostring(entry.time) .. ";"
+			message = keystoneRequest .. ";"  .. entry.name .. ";" .. entry.uid .. ";" .. entry.class .. ";" .. tostring(entry.time) .. ";"
 			for i = 1, #entry.keystones do message = message .. entry.keystones[i] .. ";" end
 			self:SendResponse(target, message)
 		end
@@ -179,9 +183,10 @@ end
 
 function Keyed:SendKeystones(target)
 	-- Prepare
+	local localizedClass, classFileName = UnitClass("player")
 	local uid = UnitGUID("player")
 	local name = UnitName("player")
-	local message = keystoneRequest .. ";" .. name .. ";" .. uid .. ";" .. tostring(GetServerTime()) .. ";"
+	local message = keystoneRequest .. ";" .. name .. ";" .. uid .. ";" .. classFileName .. ";" .. tostring(GetServerTime()) .. ";"
 	local keystones = self:FindKeystones()
 	for i = 1, #keystones do
 		message = message .. keystones[i] .. ";"

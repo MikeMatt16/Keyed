@@ -1,7 +1,8 @@
 ﻿KEYED_WEEK = 604800				-- 7 Days
-KEYED_RESET_NA = 1467712800		-- Tue, 05 Jul 2016 00:00:00 GMT
-KEYED_RESET_OC = 1467752400		-- Tue, 05 Jul 2016 11:00:00 GMT !!!UNTESTED (Also unused)!!!
-KEYED_RESET_EU = 1467799200		-- Mon, 06 Jul 2016 10:00:00 GMT !!!UNTESTED (Also unused)!!!
+KEYED_RESET_US = 1467712800		-- Tue, 05 Jul 2016 00:00:00 GMT -- apparently US, Latin America, and Oceanic use the same reset... why must you be different EU!!
+KEYED_RESET_EU = 1467788400		-- Mon, 06 Jul 2016 07:00:00 GMT
+KEYED_RESET_CN = 0				--Leave blank for now...
+KEYED_RESET_TW = 0
 KEYED_OOD = false
 KEYED_DEPLETED_MASK = 4194304
 KEYED_FRAME_PLAYER_HEIGHT = 16
@@ -12,6 +13,17 @@ KEYED_SORT_TYPE = "level"
 
 -- Load Locale...
 local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
+local keyedRealmInfo = LibStub("LibRealmInfo");
+
+-- Resets by region
+KEYED_REGION_RESETS = {
+	["US"] = KEYED_RESET_US,
+	["EU"] = KEYED_RESET_EU,
+	["TW"] = KEYED_RESET_TW,
+	["CN"] = KEYED_RESET_CN,
+};
+
+-- Instance Names by ID
 INSTANCE_NAMES = {
 	-- Raids
 	["1520"] = L["The Emerald Nightmare"],
@@ -79,6 +91,9 @@ function KeystoneList_Update ()
 	local SetHighlighted = function(fontString)
 		fontString:SetTextColor(GameFontHighlightSmall:GetTextColor())
 	end
+	local SetClass = function(fontString, classTable)
+		fontString:SetTextColor(classTable.r, classTable.g, classTable.b, classTable.a)
+	end
 	local SetNormal = function(fontString)
 		fontString:SetTextColor(GameFontNormalSmall:GetTextColor())
 	end
@@ -90,14 +105,15 @@ function KeystoneList_Update ()
 		button.link = nil
 		if keystoneIndex <= #keystoneData then
 			button.playerName = keystoneData[keystoneIndex].name
+			button.classColor = RAID_CLASS_COLORS[keystoneData[keystoneIndex].class]
 			button.dungeon = keystoneData[keystoneIndex].dungeon
 			button.level = tostring(keystoneData[keystoneIndex].level)
 			button.link = keystoneData[keystoneIndex].link
 			button.depleted = keystoneData[keystoneIndex].depleted
 			button.ood = keystoneData[keystoneIndex].ood
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Name"];
-			buttonText:SetText (button.playerName);
-			if button.depleted or button.ood then SetDepleted(buttonText) else SetNormal(buttonText) end
+			buttonText:SetText(button.playerName)
+			if button.classColor then SetClass(buttonText, button.classColor) else SetNormal(buttonText) end
 			buttonText = _G["KeystoneListFrameButton" .. i .. "Dungeon"];
 			buttonText:SetText (button.dungeon);
 			if button.depleted or button.ood then SetDepleted(buttonText) else SetHighlighted(buttonText) end
@@ -131,7 +147,7 @@ end
 
 function GetKeystoneData ()
 	-- Prepare
-	local keyedReset = KEYED_RESET_NA
+	local keyedReset = KEYED_REGION_RESETS[keyedRealmInfo.GetCurrentRegion()]
 	local keyedWeek = KEYED_WEEK
 
 	local tuesdays = math.floor((GetServerTime() - keyedReset) / keyedWeek)
@@ -150,6 +166,7 @@ function GetKeystoneData ()
 					number = number + 1
 					table.insert (data, {
 						name = entry.name,
+						class = entry.class,
 						dungeon = dungeon,
 						dungeonId = tonumber(id),
 						level = tonumber(level),
@@ -235,7 +252,9 @@ function Keyed_SortByDungeon (a, b)
 end
 
 function Keyed_SortByLevel (a, b)
-	local result = a.level < b.level	-- Compare by level first...
+	local lv1 = tonumber(a.level);
+	local lv2 = tonumber(b.level);
+	local result = lv1 < lv2;					-- Compare by level first...
 	if a.level == b.level then
 		result = a.name > b.name				-- ... if level is same, compare by name...
 		if a.name == b.name then
@@ -263,4 +282,8 @@ function KeyedFrame_ToggleMinimap(self, checked)
 		Keyed.db.profile.minimap.hide = true
 		KeyedMinimapButton:Hide("Keyed")
 	end
+end
+
+function KeyedRegionDropdown_OnLoad(self)
+	
 end

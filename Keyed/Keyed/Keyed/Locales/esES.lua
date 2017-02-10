@@ -2,6 +2,8 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("Keyed", "esES")
 if not L then return end
 
+-- THIS IS A PLACEHOLDER!!!!
+
 L["Version"] = "Version"
 L["Keystones in database:"] = "Keystones in database:"
 L["Wiped database..."] = "Wiped database..."
@@ -15,7 +17,7 @@ L["Dungeon"] = "Dungeon"
 L["Lvl"] = "Lvl"
 L["Get Keystones"] = "Get Keystones"
 L["Out of date keystones"] = "Out of date keystones"
-L["Enable Minimap Button"] = "Enable Minimap Button"
+L["Enable Minimap Button"] = "Show Minimap Button"
 L["Unknown"] = "Unknown"
 L["The Emerald Nightmare"] = "The Emerald Nightmare"
 L["The Nighthold"] = "The Nighthold"
@@ -31,6 +33,3 @@ L["Vault of the Wardens"] = "Vault of the Wardens"
 L["Click to link keystone"] = "Click to link $player's keystone"
 L["Shift-Click to link your Keystone"] = "Shift-Click to link your Keystone"
 L["Click to toggle Keyed Interface"] = "Click to toggle Keyed Interface"
-L["Americas"] = "Americas"
-L["EU"] = "EU"
-L["Oceanic"] = "Oceanic"

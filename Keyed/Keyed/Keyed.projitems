@@ -22,9 +22,11 @@
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibDBIcon-1.0\LibDBIcon-1.0.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibRealmInfo\LibRealmInfo.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibStub\LibStub.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Locales\enUS.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Locales\esES.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Locales\rurRU.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Locales\zhTW.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Textures\Keyed-Portrait.blp" />
   </ItemGroup>

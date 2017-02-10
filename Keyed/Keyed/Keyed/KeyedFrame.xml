@@ -32,9 +32,9 @@
       </OnLoad>
       <OnClick>
         if self.link then
-          ChatFrame1EditBox:Show()
-          ChatFrame1EditBox:SetFocus()
-          ChatFrame1EditBox:Insert(self.link)
+        ChatFrame1EditBox:Show()
+        ChatFrame1EditBox:SetFocus()
+        ChatFrame1EditBox:Insert(self.link)
         end
         PlaySound("igMainMenuOptionCheckBoxOn");
       </OnClick>
@@ -91,9 +91,7 @@
     </Layers>
     <Scripts>
       <OnClick>
-        if ( self.sortType ) then
-        Keyed_SortKeyed(self.sortType);
-        end
+        if (self.sortType) then Keyed_SortKeyed(self.sortType); end
         PlaySound("igMainMenuOptionCheckBoxOn");
       </OnClick>
     </Scripts>
@@ -173,10 +171,10 @@
             <Scripts>
               <OnLoad>
                 -- Load Locale...
-                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
-                self:SetText(L["Name"])
-                KeyedFrameColumn_SetWidth(self, 94)
-                self.sortType = "name"
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
+                self:SetText(L["Name"]);
+                KeyedFrameColumn_SetWidth(self, 94);
+                self.sortType = "name";
               </OnLoad>
             </Scripts>
           </Button>
@@ -187,10 +185,10 @@
             <Scripts>
               <OnLoad>
                 -- Load Locale...
-                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
-                self:SetText(L["Dungeon"])
-                KeyedFrameColumn_SetWidth(self, 175)
-                self.sortType = "dungeon"
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
+                self:SetText(L["Dungeon"]);
+                KeyedFrameColumn_SetWidth(self, 175);
+                self.sortType = "dungeon";
               </OnLoad>
             </Scripts>
           </Button>
@@ -201,10 +199,10 @@
             <Scripts>
               <OnLoad>
                 -- Load Locale...
-                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
-                self:SetText(L["Lvl"])
-                KeyedFrameColumn_SetWidth(self, 32)
-                self.sortType = "level"
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
+                self:SetText(L["Lvl"]);
+                KeyedFrameColumn_SetWidth(self, 32);
+                self.sortType = "level";
               </OnLoad>
             </Scripts>
           </Button>
@@ -216,19 +214,19 @@
             <Scripts>
               <OnLoad>
                 -- Load Locale...
-                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
-                self:SetText(L["Get Keystones"])
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
+                self:SetText(L["Get Keystones"]);
               </OnLoad>
               <OnClick function="KeyedFrameGetKeystonesButton_OnClick"/>
               <OnUpdate>
                 if KEYED_BROADCAST then
-                  if (GetServerTime() - KEYED_BROADCAST) > 4 then
-                    self:Enable()
-                  else
-                    self:Disable()
-                  end
+                if (GetServerTime() - KEYED_BROADCAST) > 4 then
+                self:Enable();
                 else
-                  self:Enable()
+                self:Disable();
+                end
+                else
+                self:Enable();
                 end
               </OnUpdate>
             </Scripts>
@@ -243,7 +241,7 @@
             </HitRectInsets>
             <Layers>
               <Layer level="BORDER">
-                <FontString name="KeyedFrameShowMinimapButtonText" inherits="GameFontNormalSmall" justifyH="LEFT">
+                <FontString name="KeyedFrameShowMinimapButtonText" inherits="GameFontNormal" justifyH="LEFT">
                   <Size x="0" y="14"/>
                   <Anchors>
                     <Anchor point="LEFT" x="26" y="0"/>
@@ -254,11 +252,11 @@
             <Scripts>
               <OnLoad>
                 -- Load Locale...
-                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
-                KeyedFrameShowMinimapButtonText:SetText(L["Enable Minimap Button"])
+                local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
+                KeyedFrameShowMinimapButtonText:SetText(L["Enable Minimap Button"]);
               </OnLoad>
               <OnClick>
-                KeyedFrame_ToggleMinimap(self, self:GetChecked())
+                KeyedFrame_ToggleMinimap(self, self:GetChecked());
               </OnClick>
             </Scripts>
             <NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>
@@ -267,6 +265,7 @@
             <CheckedTexture name="$parentCheckedTexture" file="Interface\Buttons\UI-CheckBox-Check"/>
             <DisabledCheckedTexture file="Interface\Buttons\UI-CheckBox-Check-Disabled"/>
           </CheckButton>
+          
           <CheckButton name="KeyedFrameShowOutOfDateButton" checked="false">
             <Size x="24" y="24" />
             <Anchors>
