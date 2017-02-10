@@ -1,8 +1,8 @@
 ﻿KEYED_WEEK = 604800				-- 7 Days
 KEYED_RESET_US = 1467712800		-- Tue, 05 Jul 2016 00:00:00 GMT -- apparently US, Latin America, and Oceanic use the same reset... why must you be different EU!!
 KEYED_RESET_EU = 1467788400		-- Mon, 06 Jul 2016 07:00:00 GMT
-KEYED_RESET_CN = 0				--Leave blank for now...
-KEYED_RESET_TW = 0
+KEYED_RESET_CN = 1467712800		-- Default to US time for now... Can't find information about CN (China) and TW (Taiwanese) resets.....
+KEYED_RESET_TW = 1467712800
 KEYED_OOD = false
 KEYED_DEPLETED_MASK = 4194304
 KEYED_FRAME_PLAYER_HEIGHT = 16
