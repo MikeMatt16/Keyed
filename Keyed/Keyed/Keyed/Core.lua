@@ -1,6 +1,12 @@
 -- Initialize our Ace3 AddOn
 Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0", "AceComm-3.0")
 KEYED_BROADCAST = 0
+local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
+local KeystoneId = 138019
+local prefix = "KEYED_161"
+local KeyedName = "|cffd6266cKeyed|r"
+local keystoneRequest = "keystones"
+local playerKeystoneRequest = "playerkeystone"
 
 -- Default Profile
 local defaults = {
@@ -25,24 +31,25 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 	type = "launcher",
 	text = "Keyed",
 	icon = "Interface\\AddOns\\Keyed\\Textures\\Keyed-Portrait",
-	OnClick = function()
-		if KeyedFrame then
-			if KeyedFrame:IsShown() then
-				KeyedFrame:Hide()
-			else
-				KeyedFrame:Show()
+	OnClick = function(self, button, down)
+		if button == "LeftButton" then
+			if KeyedFrame then
+				if KeyedFrame:IsShown() then KeyedFrame:Hide()
+				else KeyedFrame:Show() end
 			end
+		elseif button == "RightButton" then
+			local keystones = Keyed:FindKeystones()
+			--Link
 		end
+	end,
+	OnTooltipShow = function(tt)
+		tt:AddLine(KeyedName, 1, 1, 1);
+		tt:AddLine(" ");
+		tt:AddLine(L.MinimapTooltip)
 	end,
 })
 KeyedMinimapButton = LibStub("LibDBIcon-1.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
-
-local KeystoneId = 138019
-local prefix = "KEYED_16"
-local KeyedName = "|cffd6266cKeyed|r"
-local keystoneRequest = "keystones"
-local playerKeystoneRequest = "playerkeystone"
+KeyedPartyKeystones = {}
 
 function Keyed:OnInitialize()
 	-- Register "/keyed" command
@@ -101,6 +108,10 @@ function Keyed:Options(input)
 			print(KeyedName, L["Incorrect usage..."])
 		end
 	end
+end
+
+function Keyed:SendParty(response)
+	Keyed:SendCommMessage(prefix, response, "PARTY")
 end
 
 function Keyed:SendResponse(playerName, response)
@@ -192,6 +203,19 @@ function Keyed:SendKeystones(target)
 		message = message .. keystones[i] .. ";"
 	end
 	self:SendResponse(target, message)
+end
+
+function Keyed:SendKeystonesToParty()
+	-- Prepare
+	local localizedClass, classFileName = UnitClass("player")
+	local uid = UnitGUID("player")
+	local name = UnitName("player")
+	local message = keystoneRequest .. ";" .. name .. ";" .. uid .. ";" .. classFileName .. ";" .. tostring(GetServerTime()) .. ";"
+	local keystones = self:FindKeystones()
+	for i = 1, #keystones do
+		message = message .. keystones[i] .. ";"
+	end
+	self:SendParty(message)
 end
 
 function Keyed:FindKeystones()
