@@ -81,7 +81,7 @@ function KeystoneList_Update ()
 	local keystoneIndex
 	local showScrollBar = nil;
 	local level = ""
-	if numKeystones > 0 then
+	if numKeystones > KEYSTONES_TO_DISPLAY then
 		showScrollBar = 1
 	end
 
