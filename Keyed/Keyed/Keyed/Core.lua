@@ -124,7 +124,6 @@ function Keyed:SendKeystoneRequest(playerName)
 end
 
 function Keyed:OnCommReceived (prefix, message, channel, sender)
-	-- OnCommReceived("KEYED_17", "keystones;Rauxz;Player-10-0A9318BC;DEMONHUNTER;1491014583;|cffa335ee|Hkeystone:200:2:1:0:0:0|h[Keystone: Halls of Valor]|h|r", "Rauxz")
 	-- Prepare
 	local name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice
 	local arguments = self:SplitString(message, ';')
