@@ -155,7 +155,6 @@ function GetKeystoneData ()
 	local number = 0
 	local data = {}
 	local ood = false
-	local keystones = {}
 
 	-- Loop through database
 	if Keyed and Keyed.db.factionrealm then
