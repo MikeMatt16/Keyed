@@ -36,7 +36,7 @@ INSTANCE_NAMES = {
 	["209"] = L["The Arcway"],
 	["207"] = L["Vault of the Wardens"],
 	["234"] = L["Return to Karazhan: Upper"],
-	["227"] = L["Lower Karazhan"],
+	["227"] = L["Return to Karazhan: Lower"],
 	["233"] = L["Cathedral of Eternal Night"],
 
 }
