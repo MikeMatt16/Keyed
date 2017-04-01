@@ -39,7 +39,7 @@ KeyedMinimapButton = LibStub("LibDBIcon-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
 
 local KeystoneId = 138019
-local prefix = "KEYED_16"
+local prefix = "KEYED_17"
 local KeyedName = "|cffd6266cKeyed|r"
 local keystoneRequest = "keystones"
 local playerKeystoneRequest = "playerkeystone"
@@ -124,6 +124,7 @@ function Keyed:SendKeystoneRequest(playerName)
 end
 
 function Keyed:OnCommReceived (prefix, message, channel, sender)
+	-- OnCommReceived("KEYED_17", "keystones;Rauxz;Player-10-0A9318BC;DEMONHUNTER;1491014583;|cffa335ee|Hkeystone:200:2:1:0:0:0|h[Keystone: Halls of Valor]|h|r", "Rauxz")
 	-- Prepare
 	local name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice
 	local arguments = self:SplitString(message, ';')
@@ -144,10 +145,10 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 		uid = arguments[3]
 		classFileName = arguments[4]
 		time = tonumber(arguments[5])
-		for i = 5, #arguments do
+		for i = 6, #arguments do
 			if not self:isempty(arguments[i]) then
-				name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(arguments[i])
-				if name and link then table.insert(keystones, link) end
+				link = arguments[i]
+				table.insert(keystones, link)
 			end
 		end
 
