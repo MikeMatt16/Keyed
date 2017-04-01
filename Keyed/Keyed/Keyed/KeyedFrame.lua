@@ -34,10 +34,10 @@ INSTANCE_NAMES = {
 	["208"] = L["Maw of Souls"],
 	["206"] = L["Neltharion's Lair"],
 	["209"] = L["The Arcway"],
-	["00000"] = L["Vault of the Wardens"],
+	["207"] = L["Vault of the Wardens"],
 	["234"] = L["Return to Karazhan: Upper"],
-	["00000"] = L["Lower Karazhan"],
-	["00000"] = L["Cathedral of Eternal Night"],
+	["227"] = L["Lower Karazhan"],
+	["233"] = L["Cathedral of Eternal Night"],
 
 }
 
@@ -194,7 +194,6 @@ end
 function ExtractKeystoneData (hyperlink)
 	-- |cffa335ee|Hkeystone:200:2:1:0:0:0|h[Keystone: Halls of Valor]|h|r
 	-- |cffa335ee|Hkeystone:209:4:1:6:0:0|h[Keystone: The Arcway]|h|r
-	--           |Hkeystone:209:13:1:6:3:9|
 	local _, color, string, name = strsplit ("|", hyperlink, 4)
 	local Hitem, instMapId, plus, depleted, affix1, affix2, affix3 = strsplit (':', string, 7)
 
