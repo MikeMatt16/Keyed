@@ -26,18 +26,18 @@ KEYED_REGION_RESETS = {
 -- Instance Names by ID
 INSTANCE_NAMES = {
 	-- Dungeons
-	["1501"] = L["Black Rook Hold"],
-	["1571"] = L["Court of Stars"],
+	["00000"] = L["Black Rook Hold"],
+	["210"] = L["Court of Stars"],
 	["197"] = L["Darkheart Thicket"],
 	["193"] = L["Eye of Azshara"],
 	["200"] = L["Halls of Valor"],
 	["208"] = L["Maw of Souls"],
-	["1458"] = L["Neltharion's Lair"],
+	["206"] = L["Neltharion's Lair"],
 	["209"] = L["The Arcway"],
-	["1493"] = L["Vault of the Wardens"],
+	["00000"] = L["Vault of the Wardens"],
 	["234"] = L["Return to Karazhan: Upper"],
-	["1111"] = L["Lower Karazhan"],
-	["1111"] = L["Cathedral of Eternal Night"],
+	["00000"] = L["Lower Karazhan"],
+	["00000"] = L["Cathedral of Eternal Night"],
 
 }
 
