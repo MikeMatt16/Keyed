@@ -26,7 +26,7 @@ KEYED_REGION_RESETS = {
 -- Instance Names by ID
 INSTANCE_NAMES = {
 	-- Dungeons
-	["00000"] = L["Black Rook Hold"],
+	["199"] = L["Black Rook Hold"],
 	["210"] = L["Court of Stars"],
 	["197"] = L["Darkheart Thicket"],
 	["193"] = L["Eye of Azshara"],
