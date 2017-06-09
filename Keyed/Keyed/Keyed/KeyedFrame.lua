@@ -73,6 +73,7 @@ function KeyedFrameGetKeystonesButton_OnClick()
 end
 
 function KeystoneList_Update ()
+	--- Prepare
 	local numKeystones, keystoneData = GetKeystoneData()
 	local name, dungeon, level
 	local button, buttonText
@@ -81,10 +82,13 @@ function KeystoneList_Update ()
 	local keystoneIndex
 	local showScrollBar = nil;
 	local level = ""
+
+	--- Show scrollbar?
 	if numKeystones > KEYSTONES_TO_DISPLAY then
 		showScrollBar = 1
 	end
 
+	--- Prepare functions...
 	local SetDepleted = function(fontString)
 		fontString:SetTextColor(0.6, 0.6, 0.6, 1.0)
 	end
@@ -98,6 +102,7 @@ function KeystoneList_Update ()
 		fontString:SetTextColor(GameFontNormalSmall:GetTextColor())
 	end
 
+	--- Loop through each button...
 	for i=1, KEYSTONES_TO_DISPLAY, 1 do
 		keystoneIndex = keystoneOffset + i
 		button = _G["KeystoneListFrameButton" .. i]

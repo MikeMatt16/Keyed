@@ -1,6 +1,6 @@
-## Interface: 70100
+## Interface: 70200
 ## Author: Michael Mattera
-## Version: 1.6.1
+## Version: 1.7.0
 ## Title: |cffd6266cKeyed|r
 ## Notes: Browse guild's Mythic+ Keystones
 ## SavedVariables: Keyedv3DB

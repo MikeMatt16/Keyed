@@ -26,7 +26,7 @@
     <None Include="$(MSBuildThisFileDirectory)Keyed\Libs\LibStub\LibStub.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Locales\enUS.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Locales\esES.lua" />
-    <None Include="$(MSBuildThisFileDirectory)Keyed\Locales\rurRU.lua" />
+    <None Include="$(MSBuildThisFileDirectory)Keyed\Locales\ruRU.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Locales\zhTW.lua" />
     <None Include="$(MSBuildThisFileDirectory)Keyed\Textures\Keyed-Portrait.blp" />
   </ItemGroup>
