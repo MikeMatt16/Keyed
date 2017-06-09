@@ -4,7 +4,7 @@ KEYED_RESET_EU = 1467788400		-- Mon, 06 Jul 2016 07:00:00 GMT
 KEYED_RESET_CN = 1467712800		-- Default to US time for now... Can't find information about CN (China) and TW (Taiwanese) resets.....
 KEYED_RESET_TW = 1467712800
 KEYED_OOD = false
-KEYED_DEPLETED_MASK = 4194304
+KEYED_DEPLETED_MASK = 0
 KEYED_FRAME_PLAYER_HEIGHT = 16
 KEYSTONES_TO_DISPLAY = 19
 KEYED_SORT_ORDER_DESCENDING = false
@@ -25,20 +25,20 @@ KEYED_REGION_RESETS = {
 
 -- Instance Names by ID
 INSTANCE_NAMES = {
-	-- Raids
-	["1520"] = L["The Emerald Nightmare"],
-	["1530"] = L["The Nighthold"],
-
 	-- Dungeons
-	["1501"] = L["Black Rook Hold"],
-	["1571"] = L["Court of Stars"],
-	["1466"] = L["Darkheart Thicket"],
-	["1456"] = L["Eye of Azshara"],
-	["1477"] = L["Halls of Valor"],
-	["1492"] = L["Maw of Souls"],
-	["1458"] = L["Neltharion's Lair"],
-	["1516"] = L["The Arcway"],
-	["1493"] = L["Vault of the Wardens"],
+	["199"] = L["Black Rook Hold"],
+	["210"] = L["Court of Stars"],
+	["197"] = L["Darkheart Thicket"],
+	["193"] = L["Eye of Azshara"],
+	["200"] = L["Halls of Valor"],
+	["208"] = L["Maw of Souls"],
+	["206"] = L["Neltharion's Lair"],
+	["209"] = L["The Arcway"],
+	["207"] = L["Vault of the Wardens"],
+	["234"] = L["Return to Karazhan: Upper"],
+	["227"] = L["Return to Karazhan: Lower"],
+	["233"] = L["Cathedral of Eternal Night"],
+
 }
 
 function KeyedFrame_OnShow (self)
@@ -160,7 +160,7 @@ function GetKeystoneData ()
 	if Keyed and Keyed.db.factionrealm then
 		for uid, entry in pairs (Keyed.db.factionrealm) do
 			if entry.uid and entry.name and entry.name ~= "" and entry.keystones and (#entry.keystones > 0) then
-				name, dungeon, level, id, affixes = ExtractKeystoneData (entry.keystones[1])
+				name, dungeon, level, id, depleted, affix1, affix2, affix3 = ExtractKeystoneData (entry.keystones[1])
 				ood = math.floor((entry.time - keyedReset) / keyedWeek) < tuesdays
 				if not ood or KEYED_OOD then
 					number = number + 1
@@ -170,7 +170,7 @@ function GetKeystoneData ()
 						dungeon = dungeon,
 						dungeonId = tonumber(id),
 						level = tonumber(level),
-						depleted = (bit.band(affixes, KEYED_DEPLETED_MASK) ~= KEYED_DEPLETED_MASK),
+						depleted = entry.depleted,
 						ood = ood,
 						link = entry.keystones[1]
 					})
@@ -191,13 +191,14 @@ function GetKeystoneData ()
 end
 
 function ExtractKeystoneData (hyperlink)
-	-- |cffa335ee|Hitem:138019::::::::110:63:6160384:::1466:7:5:4:1:::|h[Mythic Keystone]|h|r
-	local _, color, string, name, _, _ = strsplit ("|", hyperlink, 6)
-	local Hitem, id, _, _, _, _, _, _, _, reqLevel, _, affixes, _, _, instMapId, plus, _, _, _, _, _ = strsplit(':', string, 21)
-	
+	-- |cffa335ee|Hkeystone:200:2:1:0:0:0|h[Keystone: Halls of Valor]|h|r
+	-- |cffa335ee|Hkeystone:209:4:1:6:0:0|h[Keystone: The Arcway]|h|r
+	local _, color, string, name = strsplit ("|", hyperlink, 4)
+	local Hitem, instMapId, plus, depleted, affix1, affix2, affix3 = strsplit (':', string, 7)
+
 	local instanceName = L["Unknown"] .. " (" .. instMapId .. ")"
 	if INSTANCE_NAMES[tostring(instMapId)] then instanceName = INSTANCE_NAMES[tostring(instMapId)] end
-	return name, instanceName, plus, instMapId, affixes
+	return name, instanceName, plus, instMapId, depleted, affix1, affix2, affix3
 end
 
 function Keyed_SortKeyed (sort)

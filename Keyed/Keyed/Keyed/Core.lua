@@ -49,6 +49,13 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 	end,
 })
 KeyedMinimapButton = LibStub("LibDBIcon-1.0")
+local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
+
+local KeystoneId = 138019
+local prefix = "KEYED_17"
+local KeyedName = "|cffd6266cKeyed|r"
+local keystoneRequest = "keystones"
+local playerKeystoneRequest = "playerkeystone"
 KeyedPartyKeystones = {}
 
 function Keyed:OnInitialize()
@@ -155,10 +162,10 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 		uid = arguments[3]
 		classFileName = arguments[4]
 		time = tonumber(arguments[5])
-		for i = 5, #arguments do
+		for i = 6, #arguments do
 			if not self:isempty(arguments[i]) then
-				name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(arguments[i])
-				if name and link then table.insert(keystones, link) end
+				link = arguments[i]
+				table.insert(keystones, link)
 			end
 		end
 
