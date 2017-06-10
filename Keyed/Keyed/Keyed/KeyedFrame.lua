@@ -41,6 +41,11 @@ INSTANCE_NAMES = {
 
 }
 
+-- Keystone Affix name by ID
+KEYSTONE_AFFIXES = {
+	-- TODO: Implement...
+}
+
 function KeyedFrame_OnShow (self)
 	-- Get Keystones...
 	Keyed:BroadcastKeystoneRequest(true)
