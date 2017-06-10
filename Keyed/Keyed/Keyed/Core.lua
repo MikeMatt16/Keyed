@@ -22,6 +22,7 @@ local defaults = {
 			guid = nil,
 			class = "PALADIN",
 			time = 0,
+			upgradeRequired = true,
 			keystones = {}
 		}
 	}
@@ -175,6 +176,7 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 			self.db.factionrealm[uid].name = player
 			self.db.factionrealm[uid].uid = uid
 			self.db.factionrealm[uid].class = classFileName
+			self.db.factionrealm[uid].upgradeRequired = false
 			table.wipe(self.db.factionrealm[uid].keystones)
 			for i = 1, #keystones do
 				table.insert(self.db.factionrealm[uid].keystones, keystones[i])
@@ -191,7 +193,7 @@ function Keyed:SendEntries(target)
 	local name, realm = UnitName("player")
 	local message = ""
 	for playerName, entry in pairs(self.db.factionrealm) do
-		if playerName ~= name then
+		if playerName ~= name and and entry.upgradeRequired ~= nil and not(entry.upgradeRequired) then
 			message = keystoneRequest .. ";"  .. entry.name .. ";" .. entry.uid .. ";" .. entry.class .. ";" .. tostring(entry.time) .. ";"
 			for i = 1, #entry.keystones do message = message .. entry.keystones[i] .. ";" end
 			self:SendResponse(target, message)
