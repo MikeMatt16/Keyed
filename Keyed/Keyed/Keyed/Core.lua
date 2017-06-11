@@ -39,13 +39,19 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 				else KeyedFrame:Show() end
 			end
 		elseif button == "RightButton" then
+			--Find keystones...
 			local keystones = Keyed:FindKeystones()
-			--Link
+
+			--Check keystones and perform a sanity check...
+			if #keystones > 0 and ChatFrame1EditBox then
+				ChatFrame1EditBox:Show()
+				ChatFrame1EditBox:SetFocus()
+				ChatFrame1EditBox:Insert(keystones[1])
+			end
 		end
 	end,
 	OnTooltipShow = function(tt)
 		tt:AddLine(KeyedName, 1, 1, 1);
-		tt:AddLine(" ");
 		tt:AddLine(L.MinimapTooltip)
 	end,
 })
@@ -193,7 +199,7 @@ function Keyed:SendEntries(target)
 	local name, realm = UnitName("player")
 	local message = ""
 	for playerName, entry in pairs(self.db.factionrealm) do
-		if playerName ~= name and and entry.upgradeRequired ~= nil and not(entry.upgradeRequired) then
+		if playerName ~= name and entry.upgradeRequired ~= nil and not(entry.upgradeRequired) then
 			message = keystoneRequest .. ";"  .. entry.name .. ";" .. entry.uid .. ";" .. entry.class .. ";" .. tostring(entry.time) .. ";"
 			for i = 1, #entry.keystones do message = message .. entry.keystones[i] .. ";" end
 			self:SendResponse(target, message)
