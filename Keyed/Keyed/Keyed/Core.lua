@@ -1,6 +1,9 @@
--- Initialize our Ace3 AddOn
+-- Initialize global variables
 Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0", "AceComm-3.0")
 KEYED_BROADCAST = 0
+KEYED_DB_VERSION = 3
+
+-- Initialize local variables
 local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
 local KeystoneId = 138019
 local prefix = "KEYED_17"
@@ -22,6 +25,7 @@ local defaults = {
 			guid = nil,
 			class = "PALADIN",
 			time = 0,
+			dbVersion = 0,
 			upgradeRequired = true,
 			keystones = {}
 		}
@@ -73,6 +77,13 @@ function Keyed:OnInitialize()
 
 	-- Load Database
 	self.db = LibStub("AceDB-3.0"):New("Keyedv3DB", defaults)
+
+	-- Clean db
+	for uid, entry in pairs(self.db.factionrealm) do
+		if entry.uid ~= uid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
+			table.remove(self.db.factionrealm, uid)
+		end
+	end
 
 	-- Register Minimap Button
 	KeyedMinimapButton:Register("Keyed", keyedLDB, self.db.profile.minimap)
@@ -183,6 +194,7 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 			self.db.factionrealm[uid].uid = uid
 			self.db.factionrealm[uid].class = classFileName
 			self.db.factionrealm[uid].upgradeRequired = false
+			self.db.factionrealm[uid].dbVersion = KEYED_DB_VERSION
 			table.wipe(self.db.factionrealm[uid].keystones)
 			for i = 1, #keystones do
 				table.insert(self.db.factionrealm[uid].keystones, keystones[i])
@@ -199,7 +211,7 @@ function Keyed:SendEntries(target)
 	local name, realm = UnitName("player")
 	local message = ""
 	for playerName, entry in pairs(self.db.factionrealm) do
-		if playerName ~= name and entry.upgradeRequired ~= nil and not(entry.upgradeRequired) then
+		if playerName ~= name and not(entry.upgradeRequired) and entry.dbVersion == KEYED_DB_VERSION then
 			message = keystoneRequest .. ";"  .. entry.name .. ";" .. entry.uid .. ";" .. entry.class .. ";" .. tostring(entry.time) .. ";"
 			for i = 1, #entry.keystones do message = message .. entry.keystones[i] .. ";" end
 			self:SendResponse(target, message)

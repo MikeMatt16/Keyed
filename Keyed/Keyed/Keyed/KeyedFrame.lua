@@ -1,4 +1,9 @@
-﻿KEYED_WEEK = 604800				-- 7 Days
+﻿-- Initialize local variables
+local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
+local keyedRealmInfo = LibStub("LibRealmInfo");
+
+-- Initialize global variables
+KEYED_WEEK = 604800				-- 7 Days
 KEYED_RESET_US = 1467712800		-- Tue, 05 Jul 2016 00:00:00 GMT -- apparently US, Latin America, and Oceanic use the same reset... why must you be different EU!!
 KEYED_RESET_EU = 1467788400		-- Mon, 06 Jul 2016 07:00:00 GMT
 KEYED_RESET_CN = 1467712800		-- Default to US time for now... Can't find information about CN (China) and TW (Taiwanese) resets.....
@@ -10,22 +15,13 @@ KEYSTONES_TO_DISPLAY = 19
 KEYED_SORT_ORDER_DESCENDING = false
 KEYED_SORT_FUNCTION = Keyed_SortByLevel
 KEYED_SORT_TYPE = "level"
-
--- Load Locale...
-local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
-local keyedRealmInfo = LibStub("LibRealmInfo");
-
--- Resets by region
-KEYED_REGION_RESETS = {
+KEYED_REGION_RESETS = {	-- Reset times based on region
 	["US"] = KEYED_RESET_US,
 	["EU"] = KEYED_RESET_EU,
 	["TW"] = KEYED_RESET_TW,
 	["CN"] = KEYED_RESET_CN,
 };
-
--- Instance Names by ID
-INSTANCE_NAMES = {
-	-- Dungeons
+INSTANCE_NAMES = {	-- Instance names by keystone ID
 	["199"] = L["Black Rook Hold"],
 	["210"] = L["Court of Stars"],
 	["197"] = L["Darkheart Thicket"],
@@ -40,9 +36,7 @@ INSTANCE_NAMES = {
 	["233"] = L["Cathedral of Eternal Night"],
 
 }
-
--- Keystone Affix name by ID
-KEYSTONE_AFFIXES = {
+KEYSTONE_AFFIXES = {	-- Keystone affixes based on keystone affix ID
 	-- TODO: Implement...
 }
 
