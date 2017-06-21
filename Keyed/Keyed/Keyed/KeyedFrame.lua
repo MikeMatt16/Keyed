@@ -24,8 +24,8 @@ KEYED_REGION_RESETS = {	-- Reset times based on region
 INSTANCE_NAMES = {	-- Instance names by keystone ID
 	["199"] = L["Black Rook Hold"],
 	["210"] = L["Court of Stars"],
-	["197"] = L["Darkheart Thicket"],
-	["193"] = L["Eye of Azshara"],
+	["198"] = L["Darkheart Thicket"],
+	["197"] = L["Eye of Azshara"],
 	["200"] = L["Halls of Valor"],
 	["208"] = L["Maw of Souls"],
 	["206"] = L["Neltharion's Lair"],
@@ -34,7 +34,6 @@ INSTANCE_NAMES = {	-- Instance names by keystone ID
 	["234"] = L["Return to Karazhan: Upper"],
 	["227"] = L["Return to Karazhan: Lower"],
 	["233"] = L["Cathedral of Eternal Night"],
-
 }
 KEYSTONE_AFFIXES = {	-- Keystone affixes based on keystone affix ID
 	-- TODO: Implement...

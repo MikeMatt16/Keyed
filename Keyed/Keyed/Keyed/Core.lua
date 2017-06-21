@@ -12,7 +12,7 @@ local keystoneRequest = "keystones"
 local playerKeystoneRequest = "playerkeystone"
 
 -- Default Profile
-local defaults = {
+local keyedDb = {
 	profile = {
 		region = "Americas",
 		minimap = {
@@ -76,12 +76,12 @@ function Keyed:OnInitialize()
 	KeystoneListFrame:RegisterForDrag("LeftButton")
 
 	-- Load Database
-	self.db = LibStub("AceDB-3.0"):New("Keyedv3DB", defaults)
+	self.db = LibStub("AceDB-3.0"):New("Keyedv3DB", keyedDb)
 
 	-- Clean db
 	for uid, entry in pairs(self.db.factionrealm) do
 		if entry.uid ~= uid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
-			table.remove(self.db.factionrealm, uid)
+			self.db.factionrealm[uid] = nil
 		end
 	end
 
@@ -122,7 +122,7 @@ function Keyed:Options(input)
 		elseif Arguments[1] == "clear" then
 			if Arguments[2] == "db" or Arguments[2] == "database" then
 				table.wipe(self.db.factionrealm)
-				self.db.factionrealm = defaults.factionrealm
+				self.db.factionrealm = keyedDb.factionrealm
 				print(KeyedName, L["Wiped database..."])
 				print("  " .. L["Please reload your UI to continue..."])
 			else
