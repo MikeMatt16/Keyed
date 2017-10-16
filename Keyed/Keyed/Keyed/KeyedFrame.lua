@@ -34,6 +34,7 @@ INSTANCE_NAMES = {	-- Instance names by keystone ID
 	["234"] = L["Return to Karazhan: Upper"],
 	["227"] = L["Return to Karazhan: Lower"],
 	["233"] = L["Cathedral of Eternal Night"],
+	["239"] = L["The Seat of the Triumvirate"]
 }
 KEYSTONE_AFFIXES = {	-- Keystone affixes based on keystone affix ID
 	-- TODO: Implement...
