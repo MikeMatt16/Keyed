@@ -1,9 +1,9 @@
 ## Interface: 70300
 ## Author: Michael Mattera
-## Version: 1.7.3
+## Version: 1.8.0
 ## Title: |cffd6266cKeyed|r
 ## Notes: Browse guild's Mythic+ Keystones
-## SavedVariables: Keyedv3DB
+## SavedVariables: KeyedDB
 
 References.xml
 Core.lua

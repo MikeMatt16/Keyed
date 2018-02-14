@@ -161,8 +161,10 @@ function GetKeystoneData ()
 	local ood = false
 
 	-- Loop through database
-	if Keyed and Keyed.db.factionrealm then
-		for uid, entry in pairs (Keyed.db.factionrealm) do
+	if Keyed and Keyed.db.factionrealm and Keyed:GetGuildDb() then
+		-- loop through each entry table (linked with a player ID)
+		local db = Keyed:GetGuildDb()
+		for uid, entry in pairs (db) do
 			if entry.uid and entry.name and entry.name ~= "" and entry.keystones and (#entry.keystones > 0) then
 				name, dungeon, level, id, depleted, affix1, affix2, affix3 = ExtractKeystoneData (entry.keystones[1])
 				ood = math.floor((entry.time - keyedReset) / keyedWeek) < tuesdays

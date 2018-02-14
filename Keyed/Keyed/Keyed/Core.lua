@@ -1,15 +1,16 @@
 -- Initialize global variables
 Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0", "AceComm-3.0")
 KEYED_BROADCAST = 0
-KEYED_DB_VERSION = 3
+KEYED_DB_VERSION = 4
 
 -- Initialize local variables
 local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
 local KeystoneId = 138019
-local prefix = "KEYED_17"
+local prefix = "KEYED_18"
 local KeyedName = "|cffd6266cKeyed|r"
 local keystoneRequest = "keystones"
 local playerKeystoneRequest = "playerkeystone"
+local playerGuild = nil
 
 -- Default Profile
 local keyedDb = {
@@ -20,18 +21,11 @@ local keyedDb = {
 		},
 	},
 	factionrealm = {
-		["*"] = {
-			name = "",
-			guid = nil,
-			class = "PALADIN",
-			time = 0,
-			dbVersion = 0,
-			upgradeRequired = true,
-			keystones = {}
-		}
+		["*"] = {}
 	}
 }
 
+-- LibDataBroker minimap button
 local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 	type = "launcher",
 	text = "Keyed",
@@ -62,13 +56,7 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 KeyedMinimapButton = LibStub("LibDBIcon-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
 
-local KeystoneId = 138019
-local prefix = "KEYED_17"
-local KeyedName = "|cffd6266cKeyed|r"
-local keystoneRequest = "keystones"
-local playerKeystoneRequest = "playerkeystone"
-KeyedPartyKeystones = {}
-
+-- OnInitialize
 function Keyed:OnInitialize()
 	-- Register "/keyed" command
 	Keyed:RegisterChatCommand("keyed", "Options")
@@ -76,18 +64,26 @@ function Keyed:OnInitialize()
 	KeystoneListFrame:RegisterForDrag("LeftButton")
 
 	-- Load Database
-	self.db = LibStub("AceDB-3.0"):New("Keyedv3DB", keyedDb)
+	self.db = LibStub("AceDB-3.0"):New("KeyedDB", keyedDb)
 
 	-- Clean db
-	for uid, entry in pairs(self.db.factionrealm) do
-		if entry.uid ~= uid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
-			self.db.factionrealm[uid] = nil
+	for i=1, #self.db.factionrealm,1 do
+		for uid, entry in pairs(self.db.factionrealm[guild]) do
+			if entry.uid ~= uid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
+				self.db.factionrealm[uid] = nil
+			end
 		end
 	end
 
 	-- Register Minimap Button
 	KeyedMinimapButton:Register("Keyed", keyedLDB, self.db.profile.minimap)
 	KeyedFrameShowMinimapButton:SetChecked(not(self.db.profile.minimap.hide))
+
+	-- Setup
+	self.playerGuild, _, _ = GetGuildInfo("player")
+	if self.playerGuild then
+		self.db.factionrealm[self.playerGuild] = {}
+	end
 end
 
 function Keyed:OnEnable()
@@ -125,8 +121,8 @@ function Keyed:Options(input)
 				self.db.factionrealm = keyedDb.factionrealm
 				print(KeyedName, L["Wiped database..."])
 				print("  " .. L["Please reload your UI to continue..."])
-			else
-				self.db.factionrealm[Arguments[2]] = nil
+			elseif (Arguments[3]) then
+				self.db.factionrealm[Arguments[2]][Arguments[3]] = nil
 				print(KeyedName, L["Wiped"], Arguments[2])
 			end
 		else
@@ -144,7 +140,14 @@ function Keyed:SendResponse(playerName, response)
 end
 
 function Keyed:BroadcastKeystoneRequest (silent)
-	if GetGuildInfo("player") then
+	-- Prepare
+	local guildName, _, _, _ = GetGuildInfo("player")
+	self.playerGuild = nil
+
+	-- Check nil-check guild name
+	if guildName then
+		self.playerGuild = guildName
+		keyedDb.factionrealm[self.playerGuild] = {}
 		if (GetServerTime() - KEYED_BROADCAST) > 4 then
 			if not silent then print(KeyedName, L["Updating keystone database..."]) end
 			Keyed:SendCommMessage(prefix, "request;" .. keystoneRequest, "GUILD")
@@ -188,16 +191,17 @@ function Keyed:OnCommReceived (prefix, message, channel, sender)
 		end
 
 		-- Wipe and add...
-		if self.db.factionrealm[uid].time < time then
-			self.db.factionrealm[uid].time = time
-			self.db.factionrealm[uid].name = player
-			self.db.factionrealm[uid].uid = uid
-			self.db.factionrealm[uid].class = classFileName
-			self.db.factionrealm[uid].upgradeRequired = false
-			self.db.factionrealm[uid].dbVersion = KEYED_DB_VERSION
-			table.wipe(self.db.factionrealm[uid].keystones)
+		local entry = Keyed:GetEntry(uid)
+		if entry.time < time then
+			entry.time = time
+			entry.name = player
+			entry.uid = uid
+			entry.class = classFileName
+			entry.upgradeRequired = false
+			entry.dbVersion = KEYED_DB_VERSION
+			table.wipe(entry.keystones)
 			for i = 1, #keystones do
-				table.insert(self.db.factionrealm[uid].keystones, keystones[i])
+				table.insert(entry.keystones, keystones[i])
 			end
 
 			-- Update List...
@@ -210,7 +214,8 @@ function Keyed:SendEntries(target)
 	-- Prepare
 	local name, realm = UnitName("player")
 	local message = ""
-	for playerName, entry in pairs(self.db.factionrealm) do
+
+	for playerName, entry in pairs(self.db.factionrealm[self.playerGuild]) do
 		if playerName ~= name and not(entry.upgradeRequired) and entry.dbVersion == KEYED_DB_VERSION then
 			message = keystoneRequest .. ";"  .. entry.name .. ";" .. entry.uid .. ";" .. entry.class .. ";" .. tostring(entry.time) .. ";"
 			for i = 1, #entry.keystones do message = message .. entry.keystones[i] .. ";" end
@@ -288,4 +293,36 @@ end
 
 function Keyed:isempty(s)
 	return s == nil or s == ''
+end
+
+function Keyed:GetGuildDb()
+	local guildDb = nil
+	if GetGuildInfo("player") then
+		local guildName, guildRankName, guildRankIndex = GetGuildInfo("player")
+		if not self.db.factionrealm[guildName] then
+			self.db.factionrealm[guildName] = {}
+		end
+		guildDb = self.db.factionrealm[guildName]
+	end
+	return guildDb
+end
+
+function Keyed:GetEntry(uid)
+	local entry = nil
+	local db = Keyed:GetGuildDb()
+	if db and uid then
+		if not db[uid] then
+			db[uid] = {
+				name = "",
+				guid = nil,
+				class = "PALADIN",
+				time = 0,
+				dbVersion = 0,
+				upgradeRequired = true,
+				keystones = {}
+			}
+		end
+		entry = db[uid]
+	end
+	return entry
 end
