@@ -4,6 +4,7 @@
 ## Title: |cffd6266cKeyed|r
 ## Notes: Browse the Mythic+ Keystones of your characters, friends, party, and guild.
 ## SavedVariables: KeyedDB
+## URL: https://github.com/MikeMatt16/Keyed
 
 References.xml
 KeyedFrame.xml
