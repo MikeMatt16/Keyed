@@ -1,10 +1,10 @@
 ## Interface: 70300
 ## Author: Michael Mattera
-## Version: 1.8.0
+## Version: 1.9.0b
 ## Title: |cffd6266cKeyed|r
-## Notes: Browse guild's Mythic+ Keystones
+## Notes: Browse the Mythic+ Keystones of your characters, friends, party, and guild.
 ## SavedVariables: KeyedDB
 
 References.xml
-Core.lua
 KeyedFrame.xml
+Core.lua
