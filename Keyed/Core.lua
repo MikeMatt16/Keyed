@@ -16,6 +16,13 @@ local KEYSTONE_ITEM_ID, KEYED_TEXT, KEYED_DB_VERSION = 138019, "|cffd6266cKeyed|
 ----------------------
 local default = {
 	global = {
+		chars = {
+			["*"] = {
+				dbVersion = 0,
+				upgradeRequired = true,
+				keystone = {}
+			},
+		},
 		bnet = {
 			["*"] = {
 				dbVersion = 0,
@@ -31,15 +38,6 @@ local default = {
 		},
 	},
 	factionrealm = {
-		chars = {
-			["*"] = {
-				["*"] = {
-					dbVersion = 0,
-					upgradeRequired = true,
-					keystone = {},
-				},
-			},
-		},
 		guilds = {
 			["*"] = {
 				["*"] = {
@@ -131,7 +129,6 @@ function Keyed:OnInitialize()
 	self.groupDb = {}
 
 	-- Setup
-	PLAYER_GUID = string.sub(UnitGUID("player"), 8);
 	PLAYER_NAME, PLAYER_REALM = UnitFullName("player")
 	PLAYER_GUILD = GetGuildInfo("player")
 
@@ -158,7 +155,7 @@ function Keyed:OnInitialize()
 		if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
 			print(KEYED_TEXT .. " found one bad entry in Characters...")
 			Keyed:GetCharsDb()[guid] = nil
-		elseif entry.keystone.guid ~= PLAYER_GUID then
+		elseif entry.keystone.name ~= PLAYER_NAME then
 			keyedKCLib:AddAltKeystone(entry.keystone)
 		end
 	end
@@ -321,7 +318,7 @@ end
 --	Returns the characters database.
 ------------------------------------
 function Keyed:GetCharsDb()
-	return self.db.factionrealm.chars
+	return self.db.global.chars
 end
 
 -------------------------------
@@ -334,18 +331,6 @@ function Keyed:GetGuildDb()
 			self.db.factionrealm.guilds[PLAYER_GUILD] = {}
 		end
 		return self.db.factionrealm.guilds[PLAYER_GUILD]
-	end
-end
-
------------------------------------------------
--- Keyed->GetGuildEntry(guid)
---	Gets a guild entry with the specified GUID.
---		guid: the player guid
------------------------------------------------
-function Keyed:GetGuildEntry(guid)
-	local db = self.db.factionrealm.guild
-	if(db and guid) then
-		if db[guid] then return db[guid] end
 	end
 end
 
@@ -368,7 +353,7 @@ end
 --		guid: the player guid
 ------------------------------------------------------
 function Keyed:CreateCharEntry(guid)
-	local db = self.db.factionrealm.chars
+	local db = self.db.global.chars
 	if db then
 		if not db[guid] then db[guid] = {} end
 		return db[guid]
