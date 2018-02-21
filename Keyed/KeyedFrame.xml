@@ -199,14 +199,14 @@
           <CheckButton name="KeyedFrameShowMinimapButton" checked="false">
             <Size x="24" y="24" />
             <Anchors>
-              <Anchor point="TOPLEFT" x="56" y="-28" />
+              <Anchor point="BOTTOMLEFT" x="4" y="2" />
             </Anchors>
             <HitRectInsets>
               <AbsInset left="0" right="0" top="0" bottom="8"/>
             </HitRectInsets>
             <Layers>
               <Layer level="BORDER">
-                <FontString name="KeyedFrameShowMinimapButtonText" inherits="GameFontNormal" justifyH="LEFT">
+                <FontString name="KeyedFrameShowMinimapButtonText" inherits="GameFontHighlight" justifyH="LEFT">
                   <Size x="0" y="14"/>
                   <Anchors>
                     <Anchor point="LEFT" x="26" y="0"/>
@@ -218,7 +218,6 @@
               <OnLoad>
               local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
               KeyedFrameShowMinimapButtonText:SetText(L["Show Minimap Button"]);
-              KeyedFrameShowMinimapButtonText:SetTextColor(1, 1, 1)
               </OnLoad>
               <OnClick>
               KeyedFrame_ToggleMinimap(self, self:GetChecked());

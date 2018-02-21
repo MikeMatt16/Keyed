@@ -243,29 +243,23 @@ end
 function Keyed:OnKeystoneReceived(keystone, sender, channel)
 	-- Check
 	if not keystone then return end
-	
-	-- Handle channel
-	if channel == "PLAYER" then
-		local entry = Keyed:CreateCharEntry(keystone.guid)
-		entry.dbVersion = KEYED_DB_VERSION
-		entry.upgradeRequired = false
-		entry.keystone = keystone
-	elseif channel == "GUILD" then
-		local entry = Keyed:CreateGuildEntry(keystone.guid)
-		entry.dbVersion = KEYED_DB_VERSION
-		entry.upgradeRequired = false
-		entry.keystone = keystone
-	elseif channel == "BNET" then
-		local entry = Keyed:CreateBnetEntry(keystone.guid)
-		entry.dbVersion = KEYED_DB_VERSION
-		entry.upgradeRequired = false
-		entry.keystone = keystone
+
+	-- Prepare
+	local entry = nil
+
+	-- Check channel
+	if channel == "PLAYER" then entry = Keyed:CreateCharEntry(keystone.guid)
+	elseif channel == "GUILD" then entry = Keyed:CreateGuildEntry(keystone.guid)
+	elseif channel == "BNET" then entry = Keyed:CreateBnetEntry(keystone.guid)
 	elseif IsInGroup() and channel == GetGroupChatChannel() then
-		local entry = Keyed:CreateGroupEntry(keystone.guid)
+		entry = Keyed:CreateGroupEntry(keystone.guid)
+	end
+	
+	-- Setup entry
+	if not entry then return end
 		entry.dbVersion = KEYED_DB_VERSION
 		entry.upgradeRequired = false
 		entry.keystone = keystone
-	end
 
 	-- Update Keystone List
 	if KeystoneList_Update then KeystoneList_Update() end
