@@ -54,9 +54,6 @@ local default = {
 -- KCLib keystone communicator
 ------------------------------
 local keyedKCLib = LibStub("Keystone Communication Library")
-keyedKCLib:AddKeystoneListener(function(keystone, channel, sender)
-	Keyed:OnKeystoneReceived(keystone, sender, channel)
-end)
 
 -------------------------------
 -- LibDataBroker minimap button
@@ -122,12 +119,19 @@ end
 --	Occurs when the AceAddOn initializes
 ----------------------------------------
 function Keyed:OnInitialize()
-	-- Load Ace Database
+	-- Setup DBs
 	self.db = LibStub("AceDB-3.0"):New("KeyedDB", default)
-
-	-- Set Group Database
 	self.groupDb = {}
 
+	-- Register "/keyed" command
+	Keyed:RegisterChatCommand("keyed", "Options")
+end
+
+---------------------------------------
+-- Keyed->OnEnable()
+--	Occurs on the 'PLAYER_LOGIN' event.
+---------------------------------------
+function Keyed:OnEnable()
 	-- Setup
 	PLAYER_NAME, PLAYER_REALM = UnitFullName("player")
 	PLAYER_GUILD = GetGuildInfo("player")
@@ -164,13 +168,16 @@ function Keyed:OnInitialize()
 	KeyedMinimapButton:Register("Keyed", keyedLDB, self.db.profile.minimap)
 	KeyedFrameShowMinimapButton:SetChecked(not(self.db.profile.minimap.hide))
 
-	-- Register "/keyed" command
-	Keyed:RegisterChatCommand("keyed", "Options")
-
 	-- Register KeyedFrame events...
 	KeyedFrame_HandleEvent("PLAYER_GUILD_UPDATE", Keyed.GuildUpdate)
 	KeyedFrame_HandleEvent("GROUP_ROSTER_UPDATE", Keyed.WipeGroupDb)
 	KeyedFrame_HandleEvent("GROUP_LEFT", Keyed.WipeGroupDb)
+
+	-- Register Keystone Listener
+	keyedKCLib:AddKeystoneListener(function(keystone, channel, sender)
+		-- Call Keyed->OnKeystoneReceived()
+		Keyed:OnKeystoneReceived(keystone, channel, sender)
+	end)
 end
 
 ----------------------------------------
@@ -237,10 +244,10 @@ end
 -- Keyed->OnKeystoneReceived(keystone)
 --	Occurs when a keystone is received.
 -- 		keystone: The keystone received.
--- 		sender: The sender of the keystone.
 -- 		channel: The channel the keystone was received on.
+-- 		sender: The sender of the keystone.
 ----------------------------------------------------------
-function Keyed:OnKeystoneReceived(keystone, sender, channel)
+function Keyed:OnKeystoneReceived(keystone, channel, sender)
 	-- Check
 	if not keystone then return end
 
