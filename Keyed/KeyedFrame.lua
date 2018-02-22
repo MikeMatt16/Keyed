@@ -3,6 +3,9 @@
 ------------------------------
 local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
 local EVENT_HANDLERS = {}
+local CHALLENGEMODE_MAPS = {}
+
+-- TODO: Add affixes to the top of the keyed window (above the list view)
 
 ------------------------------
 -- KeyedFrame Global Variables
@@ -16,6 +19,17 @@ KEYSTONES_TO_DISPLAY = 19
 KEYED_SORT_ORDER_DESCENDING = false
 KEYED_SORT_FUNCTION = Keyed_SortByLevel
 
+------------------------------------
+-- KeyedFrame_OnLoad(self)
+--	Occurs when the frame is loaded.
+--		self: The frame.
+------------------------------------
+function KeyedFrame_OnLoad(self)
+	PanelTemplates_SetNumTabs(self, 4)
+	PanelTemplates_SetTab(self, 1)
+	KeystoneList_Update()
+	CHALLENGEMODE_MAPS = C_ChallengeMode.GetMapTable();
+end
 ---------------------------------------
 -- KeyedFrame_OnEvent(self, event, ...)
 --	Occurs on event.
@@ -28,7 +42,8 @@ function KeyedFrame_OnEvent(self, event, ...)
 
 	-- Check event
 	if event == "GROUP_ROSTER_UPDATE" then Keyed:WipeGroupDb()
-	elseif event == "GROUP_LEFT" then Keyed:WipeGroupDb() end
+	elseif event == "GROUP_LEFT" then Keyed:WipeGroupDb()
+	elseif event == "CHALLENGE_MODE_MAPS_UPDATE" then KeyedFrame_Update(self, event, ...) end
 
 	-- Check handlers
 	for name,handler in pairs(EVENT_HANDLERS) do
@@ -43,7 +58,7 @@ end
 --		keystone: The player's keystone entry.
 -------------------------------------------------------
 function KeyedFramePlayerButton_OnClick(self, keystone)
-
+	-- Todo: Think of something to do when you click someone...
 end
 
 -------------------------------------------------
@@ -95,6 +110,29 @@ function KeyedFrame_HandleEvent(event, func)
 	end
 end
 
+function KeyedFrame_Update(self, event, ...)
+	-- Todo: Add frames showing current week's affixes at top of frame between title bar and list.
+	return
+	
+	-- Create map table...
+	local sortedMaps = {}
+	local hasWeeklyRun = false
+    for i = 1, #CHALLENGEMODE_MAPS do
+        local _, _, level, affixes = C_ChallengeMode.GetMapPlayerStats(CHALLENGEMODE_MAPS[i])
+		if (not level) then level = 0
+		else hasWeeklyRun = true end
+        tinsert(sortedMaps, { id = CHALLENGEMODE_MAPS[i], level = level, affixes = affixes })
+    end
+	
+	-- Check
+	for _,map in ipairs(sortedMaps) do
+		if map.affixes then
+			for i=1, #map.affixes do
+			end
+		end
+	end
+end
+
 ------------------------------------------------
 -- KeystoneListFrame_OnLoad(self)
 --	Occurs when the KeystoneListFrame is loaded.
@@ -130,7 +168,7 @@ function KeystoneList_Update()
 	local name, realm, dungeon, level
 	local button, buttonName, buttonDungeon, buttonLevel
 	local columnTable
-	local keystoneIndex
+	local keystoneIndex, keystoneEntry
 	local showScrollBar = nil;
 	local level = ""
 
@@ -162,6 +200,7 @@ function KeystoneList_Update()
 		buttonName = _G["KeystoneListFrameButton" .. i .. "Name"]
 		buttonDungeon = _G["KeystoneListFrameButton" .. i .. "Dungeon"]
 		buttonLevel = _G["KeystoneListFrameButton" .. i .. "Level"]
+
 		-- Check frames...
 		assert(button, "Unable to find button index " .. i)
 		assert(buttonName, "Unable to find button name index " .. i)
@@ -172,7 +211,7 @@ function KeystoneList_Update()
 		button.keystoneIndex = keystoneIndex
 
 		-- Check keystone
-		if keystoneIndex <= numKeystones and KCLib:GetWeeklyIndex() == keystoneData[keystoneIndex].keystoneWeekIndex then
+		if keystoneIndex <= numKeystones and keystoneData[keystoneIndex].keystoneWeekIndex >= KCLib:GetWeeklyIndex() then
 			-- Get properties from keystone
 			name, realm = strsplit("-",keystoneData[keystoneIndex].name, 2)
 			if realm == playerRealm then button.playerName = name else button.playerName = name .. "-" .. realm end

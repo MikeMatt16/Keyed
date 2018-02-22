@@ -139,27 +139,20 @@ function Keyed:OnEnable()
 	-- Clean guild DB
 	for guildName,guild in pairs(self.db.factionrealm.guilds) do
 		for guid,entry in pairs(guild) do
-			if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
-				print(KEYED_TEXT .. " found one bad entry in Guild...")
-				guild[guid] = nil
-			end
+			CheckEntry(guild, guid, entry)
 		end
 	end
 
 	-- Clean BNet DB
 	for guid,entry in pairs(Keyed:GetBnetDb()) do
 		if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
-			print(KEYED_TEXT .. " found one bad entry in BNet...")
-			Keyed:GetBnetDb()[guid] = nil
+			CheckEntry(guild, guid, entry)
 		end
 	end
 
 	-- Clean Chars DB
 	for guid,entry in pairs(Keyed:GetCharsDb()) do
-		if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
-			print(KEYED_TEXT .. " found one bad entry in Characters...")
-			Keyed:GetCharsDb()[guid] = nil
-		elseif entry.keystone.name ~= PLAYER_NAME then
+		if CheckEntry(guild, guid, entry) and entry.keystone.name ~= PLAYER_NAME then
 			keyedKCLib:AddAltKeystone(entry.keystone)
 		end
 	end
@@ -178,6 +171,19 @@ function Keyed:OnEnable()
 		-- Call Keyed->OnKeystoneReceived()
 		Keyed:OnKeystoneReceived(keystone, channel, sender)
 	end)
+end
+
+-------------------------------------------------------------------------------------------------------------------------
+-- CheckEntry(db, guid, entry)
+--	Checks an entry in a database, and removes it if necessary, returns true if the entry is OK, otherwise returns false.
+--		db: The database.
+--		guid: The entry GUID
+--		entry: The entry
+--------------------------------------------------------------------------------------------------------------------------
+local function CheckEntry(db, guid, entry)
+	if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then db[guid] = nil return false
+	elseif entry.keystoneWeekIndex ~= KCLib:GetWeeklyIndex() then db[guid] = nil return false end
+	return true
 end
 
 ----------------------------------------

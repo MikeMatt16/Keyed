@@ -323,11 +323,7 @@
     </Frames>
     <Scripts>
       <OnEvent function="KeyedFrame_OnEvent"/>
-      <OnLoad>
-      PanelTemplates_SetNumTabs(self, 4);
-      PanelTemplates_SetTab(self, 1);
-      KeystoneList_Update();
-      </OnLoad>
+      <OnLoad function="KeyedFrame_OnLoad"/>
     </Scripts>
   </Frame>
 </Ui>
