@@ -112,7 +112,6 @@ end
 
 function KeyedFrame_Update(self, event, ...)
 	-- Todo: Add frames showing current week's affixes at top of frame between title bar and list.
-	return
 	
 	-- Create map table...
 	local sortedMaps = {}

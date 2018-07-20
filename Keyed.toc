@@ -1,6 +1,6 @@
-## Interface: 70300
+## Interface: 80000
 ## Author: Michael Mattera
-## Version: 1.9.0b
+## Version: 1.10.0-alpha
 ## Title: |cffd6266cKeyed|r
 ## Notes: Browse the Mythic+ Keystones of your characters, friends, party, and guild.
 ## SavedVariables: KeyedDB

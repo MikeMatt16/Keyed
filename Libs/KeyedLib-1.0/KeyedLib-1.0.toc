@@ -1,0 +1,8 @@
+## Interface: 80000
+## Author: Michael Mattera
+## Version: 1.0
+## Title: Keyed Library
+## Notes: Keyed keystone communication library
+## URL: https://github.com/MikeMatt16/Keyed
+
+lib.xml

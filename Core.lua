@@ -1,15 +1,16 @@
 -------------------------
 -- Keyed Global Variables
 -------------------------
-Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0")
-KEYED_MAJOR, KEYED_MINOR = "Keyed-1.9", 1
+Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0");
+KEYED_MAJOR, KEYED_MINOR = "Keyed-1.9", 1;
 
 ------------------------
 -- Keyed Local Variables
 ------------------------
-local PLAYER_NAME, PLAYER_REALM, PLAYER_GUILD, PLAYER_GUID
-local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
-local KEYSTONE_ITEM_ID, KEYED_TEXT, KEYED_DB_VERSION = 138019, "|cffd6266cKeyed|r", 5
+local PLAYER_NAME, PLAYER_REALM, PLAYER_GUILD, PLAYER_GUID;
+local KEYSTONE_ITEM_ID, KEYED_TEXT, KEYED_DB_VERSION = 138019, "|cffd6266cKeyed|r", 5;
+local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
+local keyedLib = KeyedLib or LibStub("KeyedLib-1.0");
 
 ----------------------
 -- Default AceDB table
@@ -48,12 +49,7 @@ local default = {
 			},
 		},
 	},
-}
-
-------------------------------
--- KCLib keystone communicator
-------------------------------
-local keyedKCLib = LibStub("Keystone Communication Library")
+};
 
 -------------------------------
 -- LibDataBroker minimap button
@@ -82,8 +78,8 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 		tt:AddLine(KEYED_TEXT, 1, 1, 1);
 		tt:AddLine(L.MinimapTooltip)
 	end,
-})
-KeyedMinimapButton = LibStub("LibDBIcon-1.0")
+});
+KeyedMinimapButton = LibStub("LibDBIcon-1.0");
 
 ---------------------------------
 -- debug(s)
@@ -93,7 +89,7 @@ KeyedMinimapButton = LibStub("LibDBIcon-1.0")
 ---------------------------------
 local function debug(s, ...)
 	if s then print("[" .. KEYED_TEXT .. "]: " .. s) end
-	if ... then print("\t" .. ...) end
+	if (...) then print("\t" .. ...) end
 end
 
 ------------------------------------------------------------------
@@ -112,6 +108,19 @@ local function splitString(input, separator)
 	end
 	table.insert(parts, string.sub(input, theStart))
 	return parts
+end
+
+-------------------------------------------------------------------------------------------------------------------------
+-- CheckEntry(db, guid, entry)
+--	Checks an entry in a database, and removes it if necessary, returns true if the entry is OK, otherwise returns false.
+--		db: The database.
+--		guid: The entry GUID
+--		entry: The entry
+--------------------------------------------------------------------------------------------------------------------------
+local function CheckEntry(db, guid, entry)
+	if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then db[guid] = nil return false
+	elseif entry.keystoneWeekIndex ~= KCLib:GetWeeklyIndex() then db[guid] = nil return false end
+	return true
 end
 
 ----------------------------------------
@@ -138,23 +147,23 @@ function Keyed:OnEnable()
 
 	-- Clean guild DB
 	for guildName,guild in pairs(self.db.factionrealm.guilds) do
-		for guid,entry in pairs(guild) do
-			CheckEntry(guild, guid, entry)
-		end
+		--for guid,entry in pairs(guild) do
+		--	CheckEntry(guild, guid, entry)
+		--end
 	end
 
 	-- Clean BNet DB
 	for guid,entry in pairs(Keyed:GetBnetDb()) do
-		if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
-			CheckEntry(guild, guid, entry)
-		end
+		--if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
+		--	CheckEntry(guild, guid, entry)
+		--end
 	end
 
 	-- Clean Chars DB
 	for guid,entry in pairs(Keyed:GetCharsDb()) do
-		if CheckEntry(guild, guid, entry) and entry.keystone.name ~= PLAYER_NAME then
-			keyedKCLib:AddAltKeystone(entry.keystone)
-		end
+		--if CheckEntry(guild, guid, entry) and entry.keystone.name ~= PLAYER_NAME then
+		--	keyedKCLib:AddAltKeystone(entry.keystone)
+		--end
 	end
 
 	-- Register Minimap Button
@@ -167,23 +176,10 @@ function Keyed:OnEnable()
 	KeyedFrame_HandleEvent("GROUP_LEFT", Keyed.WipeGroupDb)
 
 	-- Register Keystone Listener
-	keyedKCLib:AddKeystoneListener(function(keystone, channel, sender)
-		-- Call Keyed->OnKeystoneReceived()
-		Keyed:OnKeystoneReceived(keystone, channel, sender)
-	end)
-end
-
--------------------------------------------------------------------------------------------------------------------------
--- CheckEntry(db, guid, entry)
---	Checks an entry in a database, and removes it if necessary, returns true if the entry is OK, otherwise returns false.
---		db: The database.
---		guid: The entry GUID
---		entry: The entry
---------------------------------------------------------------------------------------------------------------------------
-local function CheckEntry(db, guid, entry)
-	if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then db[guid] = nil return false
-	elseif entry.keystoneWeekIndex ~= KCLib:GetWeeklyIndex() then db[guid] = nil return false end
-	return true
+	-- keyedKCLib:AddKeystoneListener(function(keystone, channel, sender)
+	-- 	-- Call Keyed->OnKeystoneReceived()
+	-- 	Keyed:OnKeystoneReceived(keystone, channel, sender)
+	-- end)
 end
 
 ----------------------------------------

@@ -346,7 +346,6 @@ EventCallables["BAG_UPDATE"] = function()
 	delayedRun = time() + DELAY_LENGTH;
 end
 EventCallables["PLAYER_ENTERING_WORLD"] = EventCallables["BAG_UPDATE"]
-EventCallables["CHALLENGE_MODE_NEW_RECORD"] = EventCallables["BAG_UPDATE"]
 EventCallables["CHALLENGE_MODE_RESET"] = EventCallables["BAG_UPDATE"]
 EventCallables["CHALLENGE_MODE_COMPLETED"] = EventCallables["BAG_UPDATE"]
 EventCallables["CHALLENGE_MODE_START"] = EventCallables["BAG_UPDATE"]
@@ -438,7 +437,7 @@ local eventHandler = CreateFrame("Frame", nil, WorldFrame);
 eventHandler:SetScript("OnUpdate", function()  
 	if delayedRun and delayedRun > 0 and delayedRun < time() then
 		delayedRun = 0;
-		C_ChallengeMode.RequestMapInfo(); 
+		-- C_ChallengeMode.RequestMapInfo(); 
 		C_ChallengeMode.RequestRewards();
 	end
 end)
