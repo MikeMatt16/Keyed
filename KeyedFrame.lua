@@ -71,7 +71,7 @@ function KeyedFramePlayerButton_OnEnter(self, keystone)
 	local name, realm = strsplit("-", keystone.name, 2)
 	local classColor = RAID_CLASS_COLORS[keystone.class]
 	local class = LOCALIZED_CLASS_NAMES_MALE[keystone.class]
-	local dungeon = C_ChallengeMode.GetMapInfo(keystone.keystoneDungeonId)
+	local dungeon = C_ChallengeMode.GetMapUIInfo(keystone.keystoneDungeonId)
 	local faction = PLAYER_FACTION_GROUP[keystone.faction]
 	if keystone.faction then faction = PLAYER_FACTION_GROUP[1] else faction = PLAYER_FACTION_GROUP[2] end
 
@@ -91,7 +91,7 @@ function KeyedFramePlayerButton_OnEnter(self, keystone)
 	if keystone.bestKeystoneLevel == 0 then
 		KeyedKeystoneTooltip:AddLine("    " .. NONE, 0.6, 0.6, 0.6)
 	else
-		KeyedKeystoneTooltip:AddLine("    " .. C_ChallengeMode.GetMapInfo(keystone.bestKeystoneDungeonId) .. " +" .. keystone.bestKeystoneLevel, 1, 1, 1)
+		KeyedKeystoneTooltip:AddLine("    " .. C_ChallengeMode.GetMapUIInfo(keystone.bestKeystoneDungeonId) .. " +" .. keystone.bestKeystoneLevel, 1, 1, 1)
 	end
 	KeyedKeystoneTooltip:Show()
 end
@@ -117,10 +117,10 @@ function KeyedFrame_Update(self, event, ...)
 	local sortedMaps = {}
 	local hasWeeklyRun = false
     for i = 1, #CHALLENGEMODE_MAPS do
-        local _, _, level, affixes = C_ChallengeMode.GetMapPlayerStats(CHALLENGEMODE_MAPS[i])
+        local _, level = C_MythicPlus.GetWeeklyBestForMap(CHALLENGEMODE_MAPS[i])
 		if (not level) then level = 0
 		else hasWeeklyRun = true end
-        tinsert(sortedMaps, { id = CHALLENGEMODE_MAPS[i], level = level, affixes = affixes })
+        tinsert(sortedMaps, { id = CHALLENGEMODE_MAPS[i], level = level, affixes = nil })
     end
 	
 	-- Check
@@ -190,7 +190,7 @@ function KeystoneList_Update()
 	local SetNormal = function(fontString) fontString:SetTextColor(GameFontNormalSmall:GetTextColor()) end
 
 	-- Loop through each button...
-	local keystoneOffset = FauxScrollFrame_GetOffset (KeystoneListScrollFrame)
+	local keystoneOffset = FauxScrollFrame_GetOffset(KeystoneListScrollFrame)
 	for i=1, KEYSTONES_TO_DISPLAY do
 
 		-- Get Button elements
@@ -210,11 +210,11 @@ function KeystoneList_Update()
 		button.keystoneIndex = keystoneIndex
 
 		-- Check keystone
-		if keystoneIndex <= numKeystones and keystoneData[keystoneIndex].keystoneWeekIndex >= KCLib:GetWeeklyIndex() then
+		if keystoneIndex <= numKeystones and keystoneData[keystoneIndex].keystoneWeekIndex >= KeyedLib:GetWeeklyIndex() then
 			-- Get properties from keystone
 			name, realm = strsplit("-",keystoneData[keystoneIndex].name, 2)
 			if realm == playerRealm then button.playerName = name else button.playerName = name .. "-" .. realm end
-			button.dungeon = C_ChallengeMode.GetMapInfo(keystoneData[keystoneIndex].keystoneDungeonId)
+			button.dungeon = C_ChallengeMode.GetMapUIInfo(keystoneData[keystoneIndex].keystoneDungeonId)
 			button.classColor = RAID_CLASS_COLORS[keystoneData[keystoneIndex].class]
 			button.level = tostring(keystoneData[keystoneIndex].keystoneLevel)
 			button.keystone = keystoneData[keystoneIndex]

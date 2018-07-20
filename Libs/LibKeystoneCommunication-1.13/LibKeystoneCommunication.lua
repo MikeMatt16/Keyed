@@ -437,8 +437,8 @@ local eventHandler = CreateFrame("Frame", nil, WorldFrame);
 eventHandler:SetScript("OnUpdate", function()  
 	if delayedRun and delayedRun > 0 and delayedRun < time() then
 		delayedRun = 0;
-		-- C_ChallengeMode.RequestMapInfo(); 
-		C_ChallengeMode.RequestRewards();
+		C_MythicPlus.RequestMapInfo();
+		C_MythicPlus.RequestRewards();
 	end
 end)
 

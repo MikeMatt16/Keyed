@@ -10,7 +10,7 @@ KEYED_MAJOR, KEYED_MINOR = "Keyed-1.9", 1;
 local PLAYER_NAME, PLAYER_REALM, PLAYER_GUILD, PLAYER_GUID;
 local KEYSTONE_ITEM_ID, KEYED_TEXT, KEYED_DB_VERSION = 138019, "|cffd6266cKeyed|r", 5;
 local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
-local keyedLib = KeyedLib or LibStub("KeyedLib-1.0");
+local keyedLib = LibStub("KeyedLib-1.0");
 
 ----------------------
 -- Default AceDB table
@@ -66,7 +66,7 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 				else KeyedFrame:Show() end
 			end
 		elseif button == "RightButton" then
-			local keystoneLink = Keyed:GetKeystoneLink()
+			local keystoneLink = keyedLib:GetKeystoneLink();
 			if keystoneLink then
 				ChatFrame1EditBox:Show()
 				ChatFrame1EditBox:SetFocus()
@@ -80,6 +80,17 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 	end,
 });
 KeyedMinimapButton = LibStub("LibDBIcon-1.0");
+
+local function GetGroupChatChannel()
+	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+		return "INSTANCE_CHAT";
+	elseif UnitInRaid("player") then
+		return "RAID";
+	elseif IsInGroup() then
+		return "PARTY";
+	end
+	return nil;
+end
 
 ---------------------------------
 -- debug(s)
@@ -98,16 +109,16 @@ end
 --		separator: the character/string to separate the input with
 ------------------------------------------------------------------
 local function splitString(input, separator)
-	local parts = {}
-	local theStart = 1
-	local theSplitStart, theSplitEnd = string.find(input, separator, theStart)
+	local parts = {};
+	local theStart = 1;
+	local theSplitStart, theSplitEnd = string.find(input, separator, theStart);
 	while theSplitStart do
-		table.insert( parts, string.sub(input, theStart, theSplitStart-1 ) )
-		theStart = theSplitEnd + 1
-		theSplitStart, theSplitEnd = string.find(input, separator, theStart )
+		table.insert(parts, string.sub(input, theStart, theSplitStart-1));
+		theStart = theSplitEnd + 1;
+		theSplitStart, theSplitEnd = string.find(input, separator, theStart);
 	end
-	table.insert(parts, string.sub(input, theStart))
-	return parts
+	table.insert(parts, string.sub(input, theStart));
+	return parts;
 end
 
 -------------------------------------------------------------------------------------------------------------------------
@@ -129,11 +140,11 @@ end
 ----------------------------------------
 function Keyed:OnInitialize()
 	-- Setup DBs
-	self.db = LibStub("AceDB-3.0"):New("KeyedDB", default)
-	self.groupDb = {}
+	self.db = LibStub("AceDB-3.0"):New("KeyedDB", default);
+	self.groupDb = {};
 
 	-- Register "/keyed" command
-	Keyed:RegisterChatCommand("keyed", "Options")
+	Keyed:RegisterChatCommand("keyed", "Options");
 end
 
 ---------------------------------------
@@ -147,39 +158,42 @@ function Keyed:OnEnable()
 
 	-- Clean guild DB
 	for guildName,guild in pairs(self.db.factionrealm.guilds) do
-		--for guid,entry in pairs(guild) do
-		--	CheckEntry(guild, guid, entry)
-		--end
+		for guid,entry in pairs(guild) do
+			CheckEntry(self.db.factionrealm.guilds, guid, entry);
+		end
 	end
 
 	-- Clean BNet DB
 	for guid,entry in pairs(Keyed:GetBnetDb()) do
-		--if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
-		--	CheckEntry(guild, guid, entry)
-		--end
+		if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
+			CheckEntry(Keyed:GetBnetDb(), guid, entry);
+		end
 	end
 
 	-- Clean Chars DB
 	for guid,entry in pairs(Keyed:GetCharsDb()) do
-		--if CheckEntry(guild, guid, entry) and entry.keystone.name ~= PLAYER_NAME then
-		--	keyedKCLib:AddAltKeystone(entry.keystone)
-		--end
+		if CheckEntry(Keyed:GetCharsDb(), guid, entry) and entry.keystone.name ~= PLAYER_NAME then
+			keyedLib:AddAltKeystone(entry.keystone);
+		end
 	end
 
 	-- Register Minimap Button
-	KeyedMinimapButton:Register("Keyed", keyedLDB, self.db.profile.minimap)
-	KeyedFrameShowMinimapButton:SetChecked(not(self.db.profile.minimap.hide))
+	KeyedMinimapButton:Register("Keyed", keyedLDB, self.db.profile.minimap);
+	KeyedFrameShowMinimapButton:SetChecked(not(self.db.profile.minimap.hide));
 
 	-- Register KeyedFrame events...
-	KeyedFrame_HandleEvent("PLAYER_GUILD_UPDATE", Keyed.GuildUpdate)
-	KeyedFrame_HandleEvent("GROUP_ROSTER_UPDATE", Keyed.WipeGroupDb)
-	KeyedFrame_HandleEvent("GROUP_LEFT", Keyed.WipeGroupDb)
+	KeyedFrame_HandleEvent("PLAYER_GUILD_UPDATE", Keyed.GuildUpdate);
+	KeyedFrame_HandleEvent("GROUP_ROSTER_UPDATE", Keyed.WipeGroupDb);
+	KeyedFrame_HandleEvent("GROUP_LEFT", Keyed.WipeGroupDb);
 
 	-- Register Keystone Listener
-	-- keyedKCLib:AddKeystoneListener(function(keystone, channel, sender)
-	-- 	-- Call Keyed->OnKeystoneReceived()
-	-- 	Keyed:OnKeystoneReceived(keystone, channel, sender)
-	-- end)
+	keyedLib:AddKeystoneListener(function(keystone, channel, sender)
+		Keyed:OnKeystoneReceived(keystone, channel, sender)
+	end);
+
+	-- Get link
+	local link = keyedLib:GetKeystoneLink();
+	self.db.profile.keystoneLink = link;
 end
 
 ----------------------------------------
@@ -272,23 +286,6 @@ function Keyed:OnKeystoneReceived(keystone, channel, sender)
 
 	-- Update Keystone List
 	if KeystoneList_Update then KeystoneList_Update() end
-end
-
----------------------------------------------------
--- Keyed->GetKeystoneLink()
---	Returns the hyperlink of the player's keystone.
----------------------------------------------------
-function Keyed:GetKeystoneLink()
-	for bag = 0, NUM_BAG_SLOTS do
-		local bagSize = GetContainerNumSlots(bag);
-		if bagSize > 0 then
-			for i = 1, bagSize do
-				if GetContainerItemID(bag, i) == KEYSTONE_ITEM_ID then
-					return GetContainerItemLink(bag, i);
-				end
-			end
-		end
-	end
 end
 
 -------------------------------------------
