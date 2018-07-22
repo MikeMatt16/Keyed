@@ -112,24 +112,6 @@ end
 
 function KeyedFrame_Update(self, event, ...)
 	-- Todo: Add frames showing current week's affixes at top of frame between title bar and list.
-	
-	-- Create map table...
-	local sortedMaps = {}
-	local hasWeeklyRun = false
-    for i = 1, #CHALLENGEMODE_MAPS do
-        local _, level = C_MythicPlus.GetWeeklyBestForMap(CHALLENGEMODE_MAPS[i])
-		if (not level) then level = 0
-		else hasWeeklyRun = true end
-        tinsert(sortedMaps, { id = CHALLENGEMODE_MAPS[i], level = level, affixes = nil })
-    end
-	
-	-- Check
-	for _,map in ipairs(sortedMaps) do
-		if map.affixes then
-			for i=1, #map.affixes do
-			end
-		end
-	end
 end
 
 ------------------------------------------------

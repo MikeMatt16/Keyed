@@ -1,59 +1,28 @@
--------------------------
--- Keyed Global Variables
--------------------------
-Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceHook-3.0");
+Keyed = LibStub("AceAddon-3.0"):NewAddon("Keyed", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0");
 KEYED_MAJOR, KEYED_MINOR = "Keyed-1.9", 1;
 
-------------------------
--- Keyed Local Variables
-------------------------
 local PLAYER_NAME, PLAYER_REALM, PLAYER_GUILD, PLAYER_GUID;
 local KEYSTONE_ITEM_ID, KEYED_TEXT, KEYED_DB_VERSION = 138019, "|cffd6266cKeyed|r", 5;
 local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
-local keyedLib = LibStub("KeyedLib-1.0");
+local keyedLib = KeyedLib or LibStub("KeyedLib-1.0");
+local debugMode = true;	--[[Enables or disables the functionality of the debug(...) function.]]
+local delayedRun = 0;
 
-----------------------
--- Default AceDB table
-----------------------
+-- Default table
 local default = {
 	global = {
-		chars = {
-			["*"] = {
-				dbVersion = 0,
-				upgradeRequired = true,
-				keystone = {}
-			},
-		},
-		bnet = {
-			["*"] = {
-				dbVersion = 0,
-				upgradeRequired = true,
-				keystone = {},
-			}
-		},
+		chars = {},
+		bnet = {},
 	},
 	profile = {
-		region = "Americas",
 		minimap = {
 			hide = false,
 		},
 	},
 	factionrealm = {
-		guilds = {
-			["*"] = {
-				["*"] = {
-					dbVersion = 0,
-					upgradeRequired = true,
-					keystone = {},
-				},
-			},
-		},
+		guilds = {},
 	},
 };
-
--------------------------------
--- LibDataBroker minimap button
--------------------------------
 local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 	type = "launcher",
 	text = "Keyed",
@@ -92,22 +61,12 @@ local function GetGroupChatChannel()
 	return nil;
 end
 
----------------------------------
--- debug(s)
---	Prints a lovely debug message
---		s: the debug message
---		args: the debug arguments
----------------------------------
-local function debug(s, ...)
-	if s then print("[" .. KEYED_TEXT .. "]: " .. s) end
-	if (...) then print("\t" .. ...) end
+local function debug(...)
+	if debugMode then
+		print("|cffd6266c[Keyed]|r", ...);
+	end
 end
 
-------------------------------------------------------------------
--- splitString(input, separator)
---		input: the input string
---		separator: the character/string to separate the input with
-------------------------------------------------------------------
 local function splitString(input, separator)
 	local parts = {};
 	local theStart = 1;
@@ -121,22 +80,20 @@ local function splitString(input, separator)
 	return parts;
 end
 
--------------------------------------------------------------------------------------------------------------------------
--- CheckEntry(db, guid, entry)
---	Checks an entry in a database, and removes it if necessary, returns true if the entry is OK, otherwise returns false.
---		db: The database.
---		guid: The entry GUID
---		entry: The entry
---------------------------------------------------------------------------------------------------------------------------
 local function CheckEntry(db, guid, entry)
-	if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then db[guid] = nil return false
-	elseif entry.keystoneWeekIndex ~= KCLib:GetWeeklyIndex() then db[guid] = nil return false end
+	if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then 
+		db[guid] = nil;
+		return false;
+	elseif entry.keystoneWeekIndex ~= keyedLib:GetWeeklyIndex() then
+		db[guid] = nil;
+		return false 
+	end
 	return true
 end
 
 ----------------------------------------
--- Keyed->OnInitialize
---	Occurs when the AceAddOn initializes
+-- Keyed:OnInitialize
+--	Occurs on the ADDON_LOADED event.
 ----------------------------------------
 function Keyed:OnInitialize()
 	-- Setup DBs
@@ -148,32 +105,41 @@ function Keyed:OnInitialize()
 end
 
 ---------------------------------------
--- Keyed->OnEnable()
---	Occurs on the 'PLAYER_LOGIN' event.
+-- Keyed:OnEnable()
+--	Occurs on the PLAYER_LOGIN event.
 ---------------------------------------
 function Keyed:OnEnable()
 	-- Setup
 	PLAYER_NAME, PLAYER_REALM = UnitFullName("player")
 	PLAYER_GUILD = GetGuildInfo("player")
 
+	-- Initialize guild database
+	if PLAYER_GUILD then
+		self.db.factionrealm.guilds[PLAYER_GUILD] = self.db.factionrealm.guilds[PLAYER_GUILD] or {};
+	end
+	local db = nil
+
 	-- Clean guild DB
-	for guildName,guild in pairs(self.db.factionrealm.guilds) do
-		for guid,entry in pairs(guild) do
-			CheckEntry(self.db.factionrealm.guilds, guid, entry);
+	for _, guild in pairs(self.db.factionrealm.guilds) do
+		db = guild;
+		for guid,entry in pairs(db) do
+			if not CheckEntry(db, guid, entry) then debug("Cleaned guild entry", guid) end
 		end
 	end
 
 	-- Clean BNet DB
-	for guid,entry in pairs(Keyed:GetBnetDb()) do
+	db = Keyed:GetBnetDb();
+	for guid,entry in pairs(db) do
 		if entry.guid ~= guid or entry.dbVersion ~= KEYED_DB_VERSION or entry.upgradeRequired then
-			CheckEntry(Keyed:GetBnetDb(), guid, entry);
+			if not CheckEntry(db, guid, entry) then debug("Cleaned BNet entry", guid) end
 		end
 	end
 
 	-- Clean Chars DB
-	for guid,entry in pairs(Keyed:GetCharsDb()) do
-		if CheckEntry(Keyed:GetCharsDb(), guid, entry) and entry.keystone.name ~= PLAYER_NAME then
-			keyedLib:AddAltKeystone(entry.keystone);
+	db = Keyed:GetCharsDb();
+	for guid,entry in pairs(db) do
+		if CheckEntry(db, guid, entry) and entry.keystone.name ~= PLAYER_NAME then
+			KeyedLib:AddAltKeystone(entry.keystone);
 		end
 	end
 
@@ -186,19 +152,51 @@ function Keyed:OnEnable()
 	KeyedFrame_HandleEvent("GROUP_ROSTER_UPDATE", Keyed.WipeGroupDb);
 	KeyedFrame_HandleEvent("GROUP_LEFT", Keyed.WipeGroupDb);
 
-	-- Register Keystone Listener
+	-- Add keystone listener
 	keyedLib:AddKeystoneListener(function(keystone, channel, sender)
-		Keyed:OnKeystoneReceived(keystone, channel, sender)
+		-- Check
+		if not(keystone) then return end
+	
+		-- Prepare
+		local entry = nil
+		if channel == nil then
+			debug("Keystone received from self.", "Updating...");
+			entry = Keyed:CreateCharEntry(keystone.guid);
+		elseif channel == "GUILD" and Keyed:GetGuildDb() then
+			debug("Keystone received from guild.");
+			entry = Keyed:GetGuildDb()[keystone.guid];
+			if not(entry) or entry.keystone.timeGenerated < keystone.timeGenerated then
+				debug("Initializing guild entry.");
+				entry = Keyed:CreateGuildEntry(keystone.guid);
+			end
+		elseif channel == "BNET" then
+			debug("Keystone received from friends.");
+			entry = Keyed:CreateBnetEntry(keystone.guid);
+		elseif IsInGroup() and channel == GetGroupChatChannel() then
+			entry = Keyed:CreateGroupEntry(keystone.guid);
+		end
+	
+		-- Check
+		if entry then
+			entry.dbVersion = KEYED_DB_VERSION;
+			entry.upgradeRequired = false;
+			if entry.keystone.timeGenerated < keystone.timeGenerated then
+				debug(keystone.name, "Keystone was updated.");
+				entry.keystone = keystone;
+			end
+		end
+	
+		-- Update Keystone List
+		KeystoneList_Update()
 	end);
 
-	-- Get link
-	local link = keyedLib:GetKeystoneLink();
-	self.db.profile.keystoneLink = link;
+	-- Queue Synchronization
+	keyedLib:QueueSynchronization();
 end
 
 ----------------------------------------
--- Keyed->GuildUpdate()
---	Updates the 'PLAYER_GUILD' variable.
+-- Keyed:GuildUpdate()
+--	Updates the PLAYER_GUILD variable.
 ----------------------------------------
 function Keyed:GuildUpdate()
 	-- Change player guild
@@ -209,7 +207,7 @@ function Keyed:GuildUpdate()
 end
 
 ------------------------------
--- Keyed->WipeGroupDb()
+-- Keyed:WipeGroupDb()
 --	Clears the group database.
 ------------------------------
 function Keyed:WipeGroupDb()
@@ -227,7 +225,7 @@ end
 --------------------------------------------
 function Keyed:Options(input)
 	-- Check...
-	if self:isempty(input) then	-- no options; just show the GUI
+	if input == "" then	-- no options; just show the GUI
 		KeystoneList_Update()
 		KeyedFrame:Show()
 	else
@@ -235,7 +233,10 @@ function Keyed:Options(input)
 		local Arguments = splitString(input, ' ')
 		
 		-- Check 1st argument (version, clear/wipe)
-		if Arguments[1] == "version" then
+		if Arguments[1] == "help" then
+			print(KEYED_TEXT, L["Commands"]);
+			for i,v in pairs(L.commands) do print(v) end
+		elseif Arguments[1] == "version" then
 			local version = GetAddOnMetadata("Keyed", "Version")
 			if version then 
 				print(KEYED_TEXT, L["Version"], version) 
@@ -256,132 +257,88 @@ function Keyed:Options(input)
 	end
 end
 
-----------------------------------------------------------
--- Keyed->OnKeystoneReceived(keystone)
---	Occurs when a keystone is received.
--- 		keystone: The keystone received.
--- 		channel: The channel the keystone was received on.
--- 		sender: The sender of the keystone.
-----------------------------------------------------------
-function Keyed:OnKeystoneReceived(keystone, channel, sender)
-	-- Check
-	if not keystone then return end
-
-	-- Prepare
-	local entry = nil
-
-	-- Check channel
-	if channel == "PLAYER" then entry = Keyed:CreateCharEntry(keystone.guid)
-	elseif channel == "GUILD" then entry = Keyed:CreateGuildEntry(keystone.guid)
-	elseif channel == "BNET" then entry = Keyed:CreateBnetEntry(keystone.guid)
-	elseif IsInGroup() and channel == GetGroupChatChannel() then
-		entry = Keyed:CreateGroupEntry(keystone.guid)
-	end
-	
-	-- Setup entry
-	if not entry then return end
-		entry.dbVersion = KEYED_DB_VERSION
-		entry.upgradeRequired = false
-		entry.keystone = keystone
-
-	-- Update Keystone List
-	if KeystoneList_Update then KeystoneList_Update() end
-end
-
--------------------------------------------
--- Keyed->isempty(s)
---	Determines if a string is nil or empty.
---		s: input string
--------------------------------------------
-function Keyed:isempty(s)
-	return s == nil or s == ''
-end
-
 ------------------------------
--- Keyed->GetGroupDb()
+-- Keyed:GetGroupDb()
 --	Returns the group databse.
 ------------------------------
 function Keyed:GetGroupDb()
-	return self.groupDb
+	return groupDb;
 end
 
 ------------------------------------
--- Keyed->GetBnetDb()
+-- Keyed:GetBnetDb()
 --	Returns the Battle.net database.
 ------------------------------------
 function Keyed:GetBnetDb()
-	return self.db.global.bnet
+	return self.db.global.bnet;
 end
 
 ------------------------------------
--- Keyed->GetCharsDb()
+-- Keyed:GetCharsDb()
 --	Returns the characters database.
 ------------------------------------
 function Keyed:GetCharsDb()
-	return self.db.global.chars
+	return self.db.global.chars;
 end
 
 -------------------------------
--- Keyed->GetGuildDb()
+-- Keyed:GetGuildDb()
 --	Returns the guild database.
 -------------------------------
 function Keyed:GetGuildDb()
 	if PLAYER_GUILD then
-		if not self.db.factionrealm.guilds[PLAYER_GUILD] then
-			self.db.factionrealm.guilds[PLAYER_GUILD] = {}
-		end
-		return self.db.factionrealm.guilds[PLAYER_GUILD]
+		return self.db.factionrealm.guilds[PLAYER_GUILD];
 	end
 end
 
 ----------------------------------------------------
--- Keyed->CreateGuildEntry(name)
+-- Keyed:CreateGuildEntry(name)
 --	Creates a guild entry with the specified GUID.
 --		guid: the player guid
 ----------------------------------------------------
 function Keyed:CreateGuildEntry(guid)
-	local db = Keyed:GetGuildDb()
+	local db = Keyed:GetGuildDb();
 	if(db and guid) then
-		if not db[guid] then db[guid] = {} end
-		return db[guid]
+		if not db[guid] then db[guid] = { keystone = { guid = guid, timeGenerated = 0 } } end
+		return db[guid];
 	end
 end
 
 ------------------------------------------------------
--- Keyed->CreateCharEntry(guid)
+-- Keyed:CreateCharEntry(guid)
 --	Creates a character entry with the specified GUID.
 --		guid: the player guid
 ------------------------------------------------------
 function Keyed:CreateCharEntry(guid)
-	local db = self.db.global.chars
+	local db = self.db.global.chars;
 	if db then
-		if not db[guid] then db[guid] = {} end
-		return db[guid]
+		if not db[guid] then db[guid] = { keystone = { guid = guid, timeGenerated = 0 } } end
+		return db[guid];
 	end
 end
 
 -------------------------------------------------------
--- Keyed->CreateBnetEntry(name)
+-- Keyed:CreateBnetEntry(name)
 --	Creates a Battle.net entry with the specified GUID.
 --		guid: the player guid
 -------------------------------------------------------
 function Keyed:CreateBnetEntry(guid)
-	local db = self.db.global.bnet
+	local db = self.db.global.bnet;
 	if db then
-		if not db[guid] then db[guid] = {} end
-		return db[guid]
+		if not db[guid] then db[guid] = { keystone = { guid = guid, timeGenerated = 0 } } end
+		return db[guid];
 	end
 end
 
 --------------------------------------------------
--- Keyed->CreateGroupEntry(guid)
+-- Keyed:CreateGroupEntry(guid)
 --	Creates a group entry with the specified GUID.
 --		guid: the player guid
 --------------------------------------------------
 function Keyed:CreateGroupEntry(guid)
-	local db = self.groupDb
+	local db = self.groupDb;
 	if db then
-		if not db[guid] then db[guid] = {} end
-		return db[guid]
+		if not db[guid] then db[guid] = { keystone = { guid = guid, timeGenerated = 0 } } end
+		return db[guid];
 	end
 end

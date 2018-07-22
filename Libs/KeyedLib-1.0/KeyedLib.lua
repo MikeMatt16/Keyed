@@ -1,5 +1,5 @@
 --[[
-KeyedLib by Click16
+KeyedLib by Click16 and Strucker
 
 Shares keystone and character information across guild, friends, and group.
 
@@ -13,31 +13,33 @@ Required libraries must be loaded before this one.
 |cffa335ee|Hkeystone:138019:198:3:0:0:0:0|h[Keystone: Darkheart Thicket (3)]|h|r
 --]]
 
-local MAJOR, MINOR = "KeyedLib-1.0", 1;
+local MAJOR, MINOR = "KeyedLib-1.0", 2;
 local LibStub = assert(LibStub, MAJOR .. " requires LibStub");
 local libRealmInfo = assert(LibStub("LibRealmInfo"), MAJOR .. " requires LibRealmInfo");
 local ChatThrottleLib = assert(ChatThrottleLib, MAJOR .. " requires ChatThrottleLib");
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR);
 if not lib then	return end
-
 _G.KeyedLib = lib;
 
 local standalone = (...) == MAJOR;
-local debugMode = true;	--[[Enabling debug mode will override the default behavior of the debug(...) function.]]
+local debugMode = false;	--[[Enabling debug mode will override the default behavior of the debug(...) function.]]
 
 local EVENT_HANDLERS = {};
-local MSG_PREFIX = "KeyedLib";
+local MSG_PREFIX = "KeyedLib_2";
 local DELAY_LENGTH = 3;
 local WEEK_SECONDS = 604800;
 local RESET_WEDNESDAY = 1500447600;
 local RESET_TUESDAY = 1500390000;
 local KEYSTONE_ITEM_ID = 138019;
 local ALT_KEYSTONES = {};
+local GUILD_KEYSTONES = {};
 local LISTENERS = {};
 local PLAYER_NAME,PLAYER_REALM;
 local LAUNCH_TIME;
 local PLAYER_GUID;
+local delayedRun = 0;
 
+local maps = C_ChallengeMode.GetMapTable();
 local guildSynced, groupSynced, friendsSynced = false, false, false;
 local playerKeystone = nil;
 
@@ -60,7 +62,6 @@ local function GetPlayerRecord()
 	record.class = PLAYER_CLASS;
 	record.guildName = GetGuildInfo("player");
 	local ilvl, ilvlEquipped = GetAverageItemLevel();
-	debug(ilvl, ilvlEquipped);
 	record.ilvl = math.floor(ilvl);
 	record.ilvlEquipped = math.floor(ilvlEquipped);
 	record.keystoneWeekIndex = lib:GetWeeklyIndex();
@@ -77,16 +78,22 @@ local function GetPlayerRecord()
 	end
 	local bestKeystoneDungeonId = 0;
 	local bestKeystoneLevel = 0;
-	local bestLevel, bestDungeon = 0, 0;
-	for i, dungeonId in pairs(C_ChallengeMode.GetMapTable()) do
-		local _, weeklyLevel = C_MythicPlus.GetWeeklyBestForMap(dungeonId);
-		if weeklyBestLevel and weeklyBestLevel > bestLevel then
-			bestKeystoneLevel = weeklyBestLevel;
-			bestKeystoneDungeonId = dungeonId;
-		end
+	local bestLevel = 0;
+
+	local weeklySortedMaps = {}
+	for i = 1, #maps do
+		local _, weeklyLevel = C_MythicPlus.GetWeeklyBestForMap(maps[i]);
+		weeklyLevel = weeklyLevel or 0;
+		tinsert(weeklySortedMaps, { id = maps[i], level = weeklyLevel });
+	end
+	table.sort(weeklySortedMaps, function(a, b) return a.level > b.level end);
+	if #weeklySortedMaps > 0 then
+		bestKeystoneLevel = weeklySortedMaps[1].level;
+		bestKeystoneDungeonId = weeklySortedMaps[1].id;
 	end
 	record.bestKeystoneLevel = bestKeystoneLevel;
 	record.bestKeystoneDungeonId = bestKeystoneDungeonId;
+	record.timeGenerated = GetServerTime();
 	return record;
 end
 
@@ -107,12 +114,9 @@ local function RefreshPlayerKeystone()
 	
 	-- If the keystone changed, send it to the listeners.
 	if changed then
-		for _, listener in ipairs(LISTENERS) do
-			listener(keystone, "PLAYER", PLAYER_NAME);
-		end
+		debug("Keystone changed, updating self...");
+		for _, listener in ipairs(LISTENERS) do listener(record, nil, sender); end
 	end
-
-	debug("Player keystone refreshed.", changed);
 	
 	playerKeystone = record;
 	return changed;
@@ -135,6 +139,7 @@ local function SendKeystone(requestSync, keystone, channel, target)
 		msgArray[12] = keystone.keystoneLevel or "";
 		msgArray[13] = keystone.bestKeystoneDungeonId or "";
 		msgArray[14] = keystone.bestKeystoneLevel or "";
+		msgArray[15] = keystone.timeGenerated or "";
 
 		local msg = table.concat(msgArray, ",");
 		ChatThrottleLib:SendAddonMessage("BULK", MSG_PREFIX, msg, channel, target);
@@ -147,7 +152,16 @@ local function SendAllKeystones(requestSync, channel, target)
 	end
 	if ALT_KEYSTONES then
 		for _, keystone in ipairs(ALT_KEYSTONES) do
-			SendKeystone(0, keystone, channel, target);
+			if keystone.guid ~= PLAYER_GUID then
+				SendKeystone(0, keystone, channel, target);
+			end
+		end
+	end
+	if GUILD_KEYSTONES and channel == "GUILD" then
+		for _, keystone in ipairs(GUILD_KEYSTONES) do
+			if keystone.guid ~= PLAYER_GUID then
+				SendKeystone(0, keystone, channel, target);
+			end
 		end
 	end
 end
@@ -167,11 +181,11 @@ local function ProcessKeystoneMessage(msgArray, channel, sender)
 	record.keystoneLevel = tonumber(msgArray[12]) or 0;
 	record.bestKeystoneDungeonId = tonumber(msgArray[13]) or 0;
 	record.bestKeystoneLevel = tonumber(msgArray[14]) or 0;
+	record.timeGenerated = tonumber(msgArray[15]) or 0;
 	record.altOf = sender;
-	record.lastSeen = GetServerTime();
 
 	if record.keystoneWeekIndex == lib:GetWeeklyIndex() then
-		debug(record);
+		debug("Keystone record update", sender, channel);
 		for _, listener in ipairs(LISTENERS) do listener(record, channel, sender); end
 	end
 end
@@ -188,11 +202,19 @@ local function GetGroupChatChannel()
 end
 
 ------------------
--- KeyedLib:Test()
---	Test.
+-- KeyedLib:Debug()
+--	Debug. What else do you need?
 ------------------
-function lib:Test()
-	debug("test");
+function lib:Debug(...)
+	debug(...);
+end
+
+----------------------------------------
+-- KeyedLib:GetPlayerGuild()
+--	Gets and returns the player's guild.
+----------------------------------------
+function lib:GetPlayerGuild()
+	return PLAYER_GUILD;
 end
 
 ---------------------------------------------------
@@ -220,6 +242,7 @@ end
 function lib:AddKeystoneListener(listenerFunc)
 	assert(listenerFunc, "Listener function cannot be nil.");
 	assert(type(listenerFunc) == "function", "Function type expected.");
+	debug("Added Keystone listener function.");
 	tinsert(LISTENERS, listenerFunc);
 end
 
@@ -229,8 +252,18 @@ end
 --		keystone: the keystone to add.
 -------------------------------------------------------------
 function lib:AddAltKeystone(keystone)
-	assert(keystone, "Keystone cannot be nil.");
+	assert(keystone, "keystone cannot be nil.");
 	tinsert(ALT_KEYSTONES, keystone);
+end
+
+---------------------------------------------------
+-- KeyedLib:AddGuildKeystone(keystone)
+--	Adds a guild keystone record to be broadcasted.
+--		keystone: the keystone record to add.
+---------------------------------------------------
+function lib:AddGuildKeystone(keystone)
+	assert(keystone, "keystone cannot be nil.");
+	tinsert(GUILD_KEYSTONES, keystone);
 end
 
 -----------------------------------------
@@ -252,6 +285,15 @@ function lib:GetWeeklyIndex()
 	return math.floor((GetServerTime() - LAUNCH_TIME) / WEEK_SECONDS);
 end
 
+------------------------------------------------------------------------------
+-- KeyedLib:QueueSynchronization()
+--	Sends trigger for a synchronization of guild, friend, and group Keystones.
+------------------------------------------------------------------------------
+function lib:QueueSynchronization()
+	debug("Synchronization queued.");
+	guildSynced, groupSynced, friendsSynced = false, false, false;
+	scheduleUpdate();
+end
 
 -- Group joined event
 EVENT_HANDLERS["GROUP_JOINED"] = function()
@@ -284,6 +326,7 @@ EVENT_HANDLERS["PLAYER_LOGIN"] = function()
 	PLAYER_REALM = realm;
 	_, PLAYER_CLASS = UnitClass("player");
 	PLAYER_GUID = string.sub(UnitGUID("player"), 8);
+	PLAYER_GUILD = select(1, GetGuildInfo("player"));
 
 	-- Register chat prefix
 	C_ChatInfo.RegisterAddonMessagePrefix(MSG_PREFIX);
@@ -298,6 +341,7 @@ EVENT_HANDLERS["CHALLENGE_MODE_MAPS_UPDATE"] = function(...)
 
 	-- Syncronize with guild?
 	if GetGuildInfo("player") then
+		debug("Guild sync...")
 		if not(guildSynced) then
 			SendAllKeystones(1, "GUILD");
 		elseif isNew then
@@ -309,16 +353,18 @@ EVENT_HANDLERS["CHALLENGE_MODE_MAPS_UPDATE"] = function(...)
 	-- Syncronize with group?
 	local groupChatChannel = GetGroupChatChannel();
 	if groupChatChannel then
+		debug("Group sync...")
 		if not(groupSynced) then
 			SendAllKeystones(1, groupChatChannel);
 		elseif isNew then
-			SendKeystone(0, playerKeystone, groupChatChannel);
+			SendKeystone(1, playerKeystone, groupChatChannel);
 		end
 		groupSynced = true;
 	end
 
 	-- Syncronize with friends?
 	if isNew or not(friendsSynced) then
+		debug("Friends sync...")
 		for i = 1, select(2, GetNumFriends()) do
 			local fullName = GetFriendInfo(i);
 			if not(string.match(fullname, "-")) then
@@ -326,7 +372,7 @@ EVENT_HANDLERS["CHALLENGE_MODE_MAPS_UPDATE"] = function(...)
 			end
 
 			if friendsSynced then
-				SendKeystone(0, "WHISPER", fullName);
+				SendKeystone(1, "WHISPER", fullName);
 			else
 				SendAllKeystones(1, "WHISPER", fullName);
 			end
@@ -337,7 +383,7 @@ EVENT_HANDLERS["CHALLENGE_MODE_MAPS_UPDATE"] = function(...)
 				local characterName, bnetIDGameAccount, client = select(5, BNGetFriendInfo(i));
 				if bnetIDGameAccount and characterName and client == "WoW" then
 					if friendsSynced then
-						SendKeystone(0, playerKeystone, "BNET", bnetIDGameAccount);
+						SendKeystone(1, playerKeystone, "BNET", bnetIDGameAccount);
 					else
 						SendAllKeystones(1, "BNET", bnetIDGameAccount);
 					end
