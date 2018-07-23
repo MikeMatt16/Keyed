@@ -26,7 +26,7 @@ local debugMode = false;	--[[Enabling debug mode will override the default behav
 
 local EVENT_HANDLERS = {};
 local MSG_PREFIX = "KeyedLib_2";
-local DELAY_LENGTH = 3;
+local DELAY_LENGTH = 2;
 local WEEK_SECONDS = 604800;
 local RESET_WEDNESDAY = 1500447600;
 local RESET_TUESDAY = 1500390000;
@@ -246,11 +246,11 @@ function lib:AddKeystoneListener(listenerFunc)
 	tinsert(LISTENERS, listenerFunc);
 end
 
--------------------------------------------------------------
+--------------------------------------------------------------------
 -- KeyedLib:AddAltKeystone(keystone)
---	Adds an alternate character's Keystone to be broadcasted.
---		keystone: the keystone to add.
--------------------------------------------------------------
+--	Adds an alternate character's keystone record to be broadcasted.
+--		keystone: the keystone record to add.
+--------------------------------------------------------------------
 function lib:AddAltKeystone(keystone)
 	assert(keystone, "keystone cannot be nil.");
 	tinsert(ALT_KEYSTONES, keystone);

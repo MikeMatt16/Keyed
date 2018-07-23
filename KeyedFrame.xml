@@ -2,24 +2,14 @@
   xmlns="http://www.blizzard.com/wow/ui/" 
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
-  <!-- Include the frame script file 'KeyedFrame.lua' -->
-  <Script file="KeyedFrame.lua"/>
-  <GameTooltip name="KeyedKeystoneTooltip" frameStrata="TOOLTIP" hidden="true" parent="UIParent" inherits="GameTooltipTemplate">
-    <Scripts>
-      <OnLoad>
-        self:SetOwner(WorldFrame, "ANCHOR_NONE");
-        self.needsReset = true;
-	      self.updateTooltip = TOOLTIP_UPDATE_TIME;
-	      self:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TOOLTIP_DEFAULT_COLOR.b);
-	      self:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b);
-      </OnLoad>
-    </Scripts>
-  </GameTooltip>
+  <Script file="Keyed.lua"/>
+  
+  <!-- Keyed frame templates -->
   <Button name="KeyedFrameTabTemplate" inherits="CharacterFrameTabButtonTemplate" virtual="true">
     <Scripts>
       <OnClick>
         PanelTemplates_Tab_OnClick(self, KeyedFrame);
-        if self.tabType then Keyed_SwitchTab(self.tabType) end
+        if self.tabType then Keyed_SwitchTab(self.tabType); end
         PlaySound(SOUNDKIT.IG_CHARACTER_INFO_TAB);
 			</OnClick>
     </Scripts>
@@ -50,8 +40,8 @@
     </Layers>
     <Scripts>
       <OnLoad>self:RegisterForClicks("LeftButtonUp", "RightButtonUp");</OnLoad>
-      <OnClick>PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON); if self.keystone then KeyedFramePlayerButton_OnClick(self, self.keystone); end;</OnClick>
-      <OnEnter>if self.keystone then KeyedFramePlayerButton_OnEnter(self, self.keystone); end;</OnEnter>
+      <OnClick>PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON); if self.keystone then KeyedFramePlayerButton_OnClick(self, self.keystone); end</OnClick>
+      <OnEnter>if self.keystone then KeyedFramePlayerButton_OnEnter(self, self.keystone); end</OnEnter>
       <OnLeave>KeyedKeystoneTooltip:Hide();</OnLeave>
     </Scripts>
     <HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD">
@@ -107,6 +97,21 @@
       </Anchors>
     </HighlightTexture>
   </Button>
+
+  <!-- Keyed keystone tooltip frame-->
+  <GameTooltip name="KeyedKeystoneTooltip" frameStrata="TOOLTIP" hidden="true" parent="UIParent" inherits="GameTooltipTemplate">
+    <Scripts>
+      <OnLoad>
+        self:SetOwner(WorldFrame, "ANCHOR_NONE");
+        self.needsReset = true;
+        self.updateTooltip = TOOLTIP_UPDATE_TIME;
+        self:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TOOLTIP_DEFAULT_COLOR.b);
+        self:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b);
+      </OnLoad>
+    </Scripts>
+  </GameTooltip>
+
+  <!-- Keyed frame-->
   <Frame name="KeyedFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" inherits="PortraitFrameTemplate">
     <Anchors>
       <Anchor point="TOPLEFT" x="280" y="-80" />
@@ -146,7 +151,7 @@
           </Anchors>
         </FontString>
         <FontString name="KeyedVersionText" inherits="GameFontNormal">
-          <Size x="60" y="16" />
+          <Size x="100" y="16" />
           <Anchors>
             <Anchor point="BOTTOMRIGHT" x="2" y="5" />
           </Anchors>
@@ -215,13 +220,8 @@
               </Layer>
             </Layers>
             <Scripts>
-              <OnLoad>
-              local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
-              KeyedFrameShowMinimapButtonText:SetText(L["Show Minimap Button"]);
-              </OnLoad>
-              <OnClick>
-              KeyedFrame_ToggleMinimap(self, self:GetChecked());
-              </OnClick>
+              <OnLoad>KeyedFrameShowMinimapButtonText:SetText(KEYED_LOCALE["Show Minimap Button"]);</OnLoad>
+              <OnClick>KeyedFrame_ToggleMinimap(self, self:GetChecked());</OnClick>
             </Scripts>
             <NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>
             <PushedTexture file="Interface\Buttons\UI-CheckBox-Down"/>
@@ -265,13 +265,9 @@
           </ScrollFrame>
         </Frames>
         <Scripts>
-          <OnLoad function="KeystoneListFrame_OnLoad" />
-          <OnDragStart>
-          KeyedFrame:StartMoving()
-          </OnDragStart>
-          <OnDragStop>
-          KeyedFrame:StopMovingOrSizing()
-          </OnDragStop>
+          <OnLoad function="KeystoneListFrame_OnLoad"/>
+          <OnDragStart>KeyedFrame:StartMoving();</OnDragStart>
+          <OnDragStop>KeyedFrame:StopMovingOrSizing();</OnDragStop>
         </Scripts>
       </Frame>
       <Button name="KeyedFrameTab1" inherits="KeyedFrameTabTemplate" text="GUILD" id="1">
@@ -279,10 +275,7 @@
           <Anchor point="BOTTOMLEFT" x="5" y="-30"/>
         </Anchors>
         <Scripts>
-          <OnLoad>
-          KeyedFrameTab_SetWidth(self, 94);
-          self.tabType = KEYED_GUILD;
-          </OnLoad>
+          <OnLoad>KeyedFrameTab_SetWidth(self, 94); self.tabType = KEYED_GUILD;</OnLoad>
         </Scripts>
       </Button>
       <Button name="KeyedFrameTab2" inherits="KeyedFrameTabTemplate" text="FRIENDS" id="2">
@@ -290,10 +283,7 @@
           <Anchor point="LEFT" relativeTo="KeyedFrameTab1" relativePoint="RIGHT" x="-15" y="0"/>
         </Anchors>
         <Scripts>
-          <OnLoad>
-          KeyedFrameTab_SetWidth(self, 105);
-          self.tabType = KEYED_BNET;
-          </OnLoad>
+          <OnLoad>KeyedFrameTab_SetWidth(self, 105); self.tabType = KEYED_BNET;</OnLoad>
         </Scripts>
       </Button>
       <Button name="KeyedFrameTab3" text="GROUP" inherits="KeyedFrameTabTemplate" id="3">
@@ -301,10 +291,7 @@
           <Anchor point="LEFT" relativeTo="KeyedFrameTab2" relativePoint="RIGHT" x="-15" y="0"/>
         </Anchors>
         <Scripts>
-          <OnLoad>
-          KeyedFrameTab_SetWidth(self, 94);
-          self.tabType = KEYED_GROUP;
-          </OnLoad>
+          <OnLoad>KeyedFrameTab_SetWidth(self, 94); self.tabType = KEYED_GROUP;</OnLoad>
         </Scripts>
       </Button>
       <Button name="KeyedFrameTab4" inherits="KeyedFrameTabTemplate" text="Characters" id="4">
@@ -312,18 +299,14 @@
           <Anchor point="LEFT" relativeTo="KeyedFrameTab3" relativePoint="RIGHT" x="-15" y="0"/>
         </Anchors>
         <Scripts>
-          <OnLoad>
-          local L = LibStub("AceLocale-3.0"):GetLocale("Keyed");
-          self:SetText(L["Alts"]);
-          KeyedFrameTab_SetWidth(self, 80);
-          self.tabType = KEYED_ALTS;
-          </OnLoad>
+          <OnLoad>self:SetText(KEYED_LOCALE["Alts"]); KeyedFrameTab_SetWidth(self, 80); self.tabType = KEYED_ALTS;</OnLoad>
         </Scripts>
       </Button>
     </Frames>
     <Scripts>
       <OnEvent function="KeyedFrame_OnEvent"/>
       <OnLoad function="KeyedFrame_OnLoad"/>
+      <OnHide>PlaySound(SOUNDKIT.IG_CHARACTER_INFO_CLOSE);</OnHide>
     </Scripts>
   </Frame>
 </Ui>

@@ -1,23 +1,185 @@
-﻿------------------------------
--- KeyedFrame Local Variables
-------------------------------
-local L = LibStub("AceLocale-3.0"):GetLocale("Keyed")
-local EVENT_HANDLERS = {}
-local CHALLENGEMODE_MAPS = {}
+﻿KEYED_SORT_LEVEL, KEYED_SORT_NAME, KEYED_SORT_DUNGEON = "LEVEL", "NAME", "DUNGEON";
+KEYED_GUILD, KEYED_GROUP, KEYED_BNET, KEYED_ALTS = "GUILD", "PARTY", "BNET", "CHARS";
+KEYED_SORT_TYPE = KEYED_SORT_LEVEL;
+KEYED_TAB = KEYED_GUILD;
+KEYED_FRAME_PLAYER_HEIGHT = 16;
+KEYSTONES_TO_DISPLAY = 19;
+KEYED_SORT_ORDER_DESCENDING = false;
+KEYED_SORT_FUNCTION = Keyed_SortByLevel;
+KEYED_LOCALE = GetKeyedLocale();
 
--- TODO: Add affixes to the top of the keyed window (above the list view)
+local groupDB, guildDB, charactersDB, friendsDB = {}, {}, {}, {};
+local playerGuild, playerName, playerRealm, playerGuid;
+local svLoaded, playerLogin = false, false;
+local keyedSvVersion = 1;
+local keyedDbVersion = 1;
+local keyedName = select(1, ...);
+local keyedText = "|cffd6266cKeyed|r";
+local eventHandlers = {};
+local challengeModeMaps = {};
+local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
+	type = "launcher",
+	text = "Keyed",
+	icon = "Interface\\AddOns\\Keyed\\Textures\\Keyed-Portrait",
+	OnClick = function(self, button, down)
+		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+		if button == "LeftButton" then
+			if KeyedFrame then
+				if KeyedFrame:IsShown() then KeyedFrame:Hide()
+				else KeyedFrame:Show() end
+			end
+		elseif button == "RightButton" then
+			local keystoneLink = KeyedLib:GetKeystoneLink();
+			if keystoneLink then
+				ChatFrame1EditBox:Show()
+				ChatFrame1EditBox:SetFocus()
+				ChatFrame1EditBox:Insert(keystoneLink)
+			end
+		end
+	end,
+	OnTooltipShow = function(tt)
+		tt:AddLine(keyedText, 1, 1, 1);
+		tt:AddLine(KEYED_LOCALE.MinimapLine1);
+		tt:AddLine(KEYED_LOCALE.MinimapLine2);
+	end,
+});
+KeyedMinimapButton = LibStub("LibDBIcon-1.0");
 
-------------------------------
--- KeyedFrame Global Variables
-------------------------------
-KEYED_SORT_LEVEL, KEYED_SORT_NAME, KEYED_SORT_DUNGEON = "LEVEL", "NAME", "DUNGEON"
-KEYED_GUILD, KEYED_GROUP, KEYED_BNET, KEYED_ALTS = "GUILD", "PARTY", "BNET", "CHARS"
-KEYED_SORT_TYPE = KEYED_SORT_LEVEL
-KEYED_TAB = KEYED_GUILD
-KEYED_FRAME_PLAYER_HEIGHT = 16
-KEYSTONES_TO_DISPLAY = 19
-KEYED_SORT_ORDER_DESCENDING = false
-KEYED_SORT_FUNCTION = Keyed_SortByLevel
+local function SaveDatabases()
+	KeyedDB.characters = charactersDB;
+	KeyedDB.friends = friendsDB;
+	if playerGuild then KeyedDB.guilds[playerRealm][playerGuild] = guildDB; end
+end
+
+local function LoadDatabases()
+	for guid, entry in pairs(KeyedDB.characters) do
+		charactersDB[guid] = entry;
+	end
+	for guid, entry in pairs(KeyedDB.friends) do
+		friendsDB[guid] = entry;
+	end
+	if playerGuild then
+		for guid, entry in pairs(KeyedDB.guilds[playerRealm][playerGuild]) do
+			guildDB[guid] = entry;
+		end
+	end
+end
+
+eventHandlers["ADDON_LOADED"] = function(self, name)
+	if name == keyedName then
+		if not KeyedSV or KeyedSV ~= keyedSvVersion then
+			-- Initialize all databases
+			KeyedSV = keyedSvVersion;
+			KeyedDB = { 
+				icon = {
+					hide = false,
+				},
+				guilds = {},
+				friends = {},
+				characters = {},
+			};
+		end
+	end
+	svLoaded = true;	-- SavedVariables loaded
+
+	-- Clean guild database of out-of-date entries
+	for _, realmTable in pairs(KeyedDB.guilds) do
+		for guildName, guildTable in pairs(realmTable) do
+			for guid, entry in pairs(guildTable) do
+					if (entry.version or 0) ~= keyedDbVersion then
+						realmTable[guid] = nil;
+					end
+			end
+		end
+	end
+
+	-- Clean friends database of out-of-date entries
+	for guid, entry in pairs(KeyedDB.friends) do
+		if (entry.version or 0) ~= keyedDbVersion then
+			KeyedDB.friends[guid] = nil;
+		end
+	end
+
+	-- Clean characters database of out-of-date entries
+	for guid, entry in pairs(KeyedDB.characters) do
+		if (entry.version or 0) ~= keyedDbVersion then
+			KeyedDB.characters[guid] = nil;
+		end
+	end
+end
+
+eventHandlers["PLAYER_LOGIN"] = function(self, ...)
+	-- Minimap button
+	KeyedMinimapButton:Register(keyedName, keyedLDB, KeyedDB.icon);
+	KeyedFrameShowMinimapButton:SetChecked(not(KeyedDB.icon.hide));
+
+	-- Load player information
+	playerGuid = string.sub(UnitGUID("player"), 8);
+	playerName, playerRealm = UnitFullName("player");
+	playerGuild = select(1, GetGuildInfo("player"));
+
+	-- Initialize realm and guild
+	KeyedDB.guilds[playerRealm] = KeyedDB.guilds[playerRealm] or {};
+	if playerGuild then
+		KeyedDB.guilds[playerRealm][playerGuild] = KeyedDB.guilds[playerRealm][playerGuild] or {};
+	end
+	playerLogin = true;
+
+	-- Load database from saved variables.
+	LoadDatabases();
+
+	-- Add characters to KeyedLib
+	for guid, entry in pairs(charactersDB) do
+		if entry.keystone and guid == entry.keystone.guid and guid ~= playerGuid then KeyedLib:AddAltKeystone(entry.keystone); end
+	end
+
+	-- Add guild members to KeyedLib
+	for guid, entry in pairs(guildDB) do
+		if entry.keystone and guid == entry.keystone.guid and guid ~= playerGuid then KeyedLib:AddGuildKeystone(entry.keystone); end
+	end
+
+	-- Add character entry to characters and guild if applicable
+	local keystone = KeyedLib:GetPlayerKeystone();
+	local entry = { version = keyedDbVersion, keystone = keystone };
+	if keystone and keystone.guid then
+		charactersDB[keystone.guid] = entry;
+		if playerGuild then
+			guildDB[keystone.guid] = entry;
+		end
+	end
+
+	-- Listen for keystones
+	KeyedLib:AddKeystoneListener(function(keystone, channel, sender)
+		if sender and keystone then
+			local entry = { version = keyedDbVersion, keystone = keystone };
+			local indexer = keystone.guid;
+
+			-- Check
+			if channel == "INSTANCE_CHAT" or channel == "RAID" or channel == "PARTY" then
+				groupDB[indexer] = entry;
+			elseif channel == "GUILD" then
+				local time = (((guildDB or {})[indexer] or {}).keystone or {}).timeGenerated or 0;
+				if time < keystone.timeGenerated then guildDB[indexer] = entry; end
+			elseif channel == "BNET" or channel == "WHISPER" then
+				friendsDB[indexer] = entry;
+			end
+
+			-- Update
+			KeystoneList_Update();
+			SaveDatabases();
+		end
+	end);
+
+	-- Queue sync and update
+	KeyedLib:QueueSynchronization();
+	KeystoneList_Update();
+	SaveDatabases();
+end
+
+eventHandlers["PLAYER_LOGOUT"] = function(self, ...)
+	-- Save databases
+	SaveDatabases();
+end
 
 ------------------------------------
 -- KeyedFrame_OnLoad(self)
@@ -28,8 +190,55 @@ function KeyedFrame_OnLoad(self)
 	PanelTemplates_SetNumTabs(self, 4)
 	PanelTemplates_SetTab(self, 1)
 	KeystoneList_Update()
-	CHALLENGEMODE_MAPS = C_ChallengeMode.GetMapTable();
+	challengeModeMaps = C_ChallengeMode.GetMapTable();
+	SLASH_KEYED1 = "/keyed";
+	SlashCmdList.KEYED = function(msg, editBox)
+		KeyedFrame_Options(msg);
+	end
+	tinsert(UISpecialFrames, "KeyedFrame");
 end
+
+-------------------------------------------------
+-- KeyedFrame_Options(input)
+--	Occurs when the player types a slash command.
+--		input: The slash command argument(s).
+-------------------------------------------------
+function KeyedFrame_Options(input)
+	if input == "" then	-- no options; just show the GUI
+		KeystoneList_Update()
+		KeyedFrame:Show()
+	else
+		-- Get arguments
+		local arguments = { strsplit(' ', input) };
+		
+		-- Check 1st argument (version, clear/wipe)
+		if arguments[1] == "help" then
+			print(keyedText, KEYED_LOCALE["Commands"]);
+			for i,v in pairs(KEYED_LOCALE.commands) do print(v); end
+		elseif arguments[1] == "version" then
+			local version = GetAddOnMetadata("Keyed", "Version")
+			if version then 
+				print(keyedText, KEYED_LOCALE["Version"], version);
+			end
+		elseif arguments[1] == "clear" then
+			if arguments[2] == "all" then
+				-- Wipe databases...
+				table.wipe(guildDB or {});
+				table.wipe(friendsDB or {});
+				table.wipe(charactersDB or {});
+				table.wipe(groupDB or {});
+				print(keyedText, KEYED_LOCALE["Database Wiped"]);
+
+				-- Update keystone list
+				KeystoneList_Update();
+				SaveDatabases();
+			end
+		else
+			print(keyedText, KEYED_LOCALE["Incorrect Usage"]);
+		end
+	end
+end
+
 ---------------------------------------
 -- KeyedFrame_OnEvent(self, event, ...)
 --	Occurs on event.
@@ -38,27 +247,27 @@ end
 --		...: the event arguments
 ---------------------------------------
 function KeyedFrame_OnEvent(self, event, ...)
-	if not Keyed then return end
-
 	-- Check event
-	if event == "GROUP_ROSTER_UPDATE" then Keyed:WipeGroupDb()
-	elseif event == "GROUP_LEFT" then Keyed:WipeGroupDb()
-	elseif event == "CHALLENGE_MODE_MAPS_UPDATE" then KeyedFrame_Update(self, event, ...) end
+	if event == "GROUP_ROSTER_UPDATE" or "GROUP_LEFT" then
+		groupDB = {};
+	elseif event == "CHALLENGE_MODE_MAPS_UPDATE" then
+		KeyedFrame_Update(self, event, ...)
+	end
 
 	-- Check handlers
-	for name,handler in pairs(EVENT_HANDLERS) do
-		if event == name and handler then handler(event, ...) end
+	for name,handler in pairs(eventHandlers) do
+		if event == name and handler then handler(self, ...) end
 	end
 end
 
--------------------------------------------------------
+-------------------------------------------------
 -- KeyedFramePlayerButton_OnClick(self, keystone)
 --	Occurs when a player button is clicked.
 --		self: The player button frame.
 --		keystone: The player's keystone entry.
--------------------------------------------------------
+-------------------------------------------------
 function KeyedFramePlayerButton_OnClick(self, keystone)
-	-- Todo: Think of something to do when you click someone...
+	-- TODO: Do something when the player clicks on list item.
 end
 
 -------------------------------------------------
@@ -84,10 +293,10 @@ function KeyedFramePlayerButton_OnEnter(self, keystone)
 	KeyedKeystoneTooltip:AddLine(gsub(ITEM_LEVEL, "%%d", keystone.ilvlEquipped .. "/" .. keystone.ilvl), 1, 1, 1)
 	KeyedKeystoneTooltip:AddLine(strjoin(" ", faction, realm), 1, 1, 1)
 	KeyedKeystoneTooltip:AddLine(" ")
-	KeyedKeystoneTooltip:AddLine(L["Current Keystone"])
+	KeyedKeystoneTooltip:AddLine(KEYED_LOCALE["Current Keystone"])
 	KeyedKeystoneTooltip:AddLine("    " .. dungeon .. " +" .. keystone.keystoneLevel, 1, 1, 1)
 	KeyedKeystoneTooltip:AddLine(" ")
-	KeyedKeystoneTooltip:AddLine(L["Weekly Best"])
+	KeyedKeystoneTooltip:AddLine(KEYED_LOCALE["Weekly Best"])
 	if keystone.bestKeystoneLevel == 0 then
 		KeyedKeystoneTooltip:AddLine("    " .. NONE, 0.6, 0.6, 0.6)
 	else
@@ -103,7 +312,7 @@ end
 --		func: The event handler function.
 -----------------------------------------
 function KeyedFrame_HandleEvent(event, func)
-	if EVENT_HANDLERS[event] then error("Event " .. event .. " is already being handled by another function.")
+	if eventHandlers[event] then error("Event " .. event .. " is already being handled by another function.")
 		if type(event) == "string" and type(func) == "function" then
 			EVENT_HANDLERS[event] = func
 		else error("Incorrect usage. KeyedFrame_HandleEvent(event, function)\r\n\tevent: the event string.\r\n\tfunc: the event handler function.") end
@@ -144,7 +353,6 @@ end
 -------------------------------------
 function KeystoneList_Update()
 	-- Prepare
-	local playerFullName, playerRealm = UnitFullName("player")
 	local numKeystones, keystoneData = 0, {}
 	local name, realm, dungeon, level
 	local button, buttonName, buttonDungeon, buttonLevel
@@ -154,12 +362,14 @@ function KeystoneList_Update()
 	local level = ""
 
 	-- Get Database...
-	if Keyed then
-		if KEYED_TAB == KEYED_GUILD then numKeystones, keystoneData = GetKeystoneData(Keyed:GetGuildDb())
-		elseif KEYED_TAB == KEYED_BNET then numKeystones, keystoneData = GetKeystoneData(Keyed:GetBnetDb())
-		elseif KEYED_TAB == KEYED_GROUP then numKeystones, keystoneData = GetKeystoneData(Keyed:GetGroupDb())
-		elseif KEYED_TAB == KEYED_ALTS then numKeystones, keystoneData = GetKeystoneData(Keyed:GetCharsDb())
-		end
+	if KEYED_TAB == KEYED_GUILD then
+		numKeystones, keystoneData = KeyedFrame_GetKeystoneData(guildDB);
+	elseif KEYED_TAB == KEYED_BNET then
+		numKeystones, keystoneData = KeyedFrame_GetKeystoneData(friendsDB);
+	elseif KEYED_TAB == KEYED_GROUP then
+		numKeystones, keystoneData = KeyedFrame_GetKeystoneData(groupDB);
+	elseif KEYED_TAB == KEYED_ALTS then 
+		numKeystones, keystoneData = KeyedFrame_GetKeystoneData(charactersDB);
 	end
 
 	-- Show scrollbar?
@@ -241,28 +451,32 @@ function KeyedFrameTab_SetWidth(frame, width)
 end
 
 ------------------------------------------------------
--- GetKeystoneData(db)
+-- KeyedFrame_GetKeystoneData(db)
 --		db: The database to retrieve entries data from
 ------------------------------------------------------
-function GetKeystoneData(db)
-	if not db then return 0, {} end
-	local number = 0
-	local data = {}
-	
+function KeyedFrame_GetKeystoneData(db)
+	local number = 0;
+	local data = {};
+
 	-- Loop through database
-	for name, entry in pairs(db) do
-		if name and entry and entry.keystone.keystoneLevel > 0 then
-			number = number + 1
-			table.insert(data, entry.keystone)
+	if db then
+		for guid, entry in pairs(db) do
+			if guid and entry and entry.keystone.keystoneLevel > 0 then
+				number = number + 1;
+				table.insert(data, entry.keystone);
+			end
 		end
 	end
 
 	-- Sort...
-	if KEYED_SORT_FUNCTION then	table.sort(data, KEYED_SORT_FUNCTION)
-	else table.sort(data, Keyed_SortByLevel) end
+	if KEYED_SORT_FUNCTION then
+		table.sort(data, KEYED_SORT_FUNCTION);
+	else 
+		table.sort(data, Keyed_SortByLevel);
+	end
 	
 	-- Return results
-	return number, data
+	return number, data;
 end
 
 ------------------------------------------------------------------------------
@@ -367,10 +581,10 @@ end
 ----------------------------------------------
 function KeyedFrame_ToggleMinimap(self, checked)
 	if checked then
-		Keyed.db.profile.minimap.hide = false
+		KeyedDB.icon.hide = false
 		KeyedMinimapButton:Show("Keyed")
 	else
-		Keyed.db.profile.minimap.hide = true
+		KeyedDB.icon.hide = true
 		KeyedMinimapButton:Hide("Keyed")
 	end
 end

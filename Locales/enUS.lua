@@ -1,25 +1,27 @@
-﻿-- Localization file for English/United States
-local L = LibStub("AceLocale-3.0"):NewLocale("Keyed", "enUS", true)
+﻿-- Prepare locale
+local locale = {};
 
-L["Commands"] = "Commands"
-L["Version"] = "Version"
-L["Database Wiped"] = "Wiped database..."
-L["Wiped"] = "Wiped"
-L["Incorrect Usage"] = "Incorrect usage..."
-L["Alts"] = "Characters"
-L["Show Minimap Button"] = "Show Minimap Button"
-
--- Minimap Tool tip
-L["MinimapTooltip"] = "Left Click to toggle Keyed Interface\r\nRight Click to link your Keystone"
-
--- KeyedKeystoneToolTip
-L["Current Keystone"] = "Current Keystone"
-L["Weekly Best"] = "Weekly Best"
+-- Check locale
+locale["Commands"] = "Commands";
+locale["Version"] = "Version";
+locale["Database Wiped"] = "Wiped database...";
+locale["Wiped"] = "Wiped";
+locale["Incorrect Usage"] = "Incorrect usage...";
+locale["Alts"] = "Characters";
+locale["Show Minimap Button"] = "Show Minimap Button";
+locale["MinimapLine1"] = "Left Click to toggle Keyed Interface";
+locale["MinimapLine2"] = "Right click to link your Keystone";
+locale["Current Keystone"] = "Current Keystone";
+locale["Weekly Best"] = "Weekly Best";
 
 -- Help
-L.commands = 
+locale.commands = 
 {
+	[" "] = "|cffd6266c/keyed|r " .. "|cffedd28e" .. "Shows the Keyed UI." .. "|r",
 	help = "|cffd6266c/keyed|r " .. "help" .. " - " .. "|cffedd28e" .. "Displays command list." .. "|r",
 	version = "|cffd6266c/keyed|r " .. "version"  .. " - " .. "|cffedd28e" .. "Displays the current version." .. "|r",
-	wipe = "|cffd6266c/keyed|r " .. "wipe||clear db" .. " - " .. "|cffedd28e" .. "Displays command list." .. "|r",
-}
+	wipe = "|cffd6266c/keyed|r " .. "clear db" .. " - " .. "|cffedd28e" .. "Displays command list." .. "|r",
+};
+
+-- Set to enUS locale
+Keyed_Localizations["enUS"] = locale;

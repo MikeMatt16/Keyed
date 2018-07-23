@@ -3,9 +3,20 @@
 ## Version: 1.10.0-alpha
 ## Title: |cffd6266cKeyed|r
 ## Notes: Browse the Mythic+ Keystones of your characters, friends, party, and guild.
-## SavedVariables: KeyedDB
+## SavedVariables: KeyedSV, KeyedDB
 ## URL: https://github.com/MikeMatt16/Keyed
 
-References.xml
+# 3rd party libraries
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\ChatThrottleLib\ChatThrottleLib.xml
+Libs\LibRealmInfo\LibRealmInfo.lua
+Libs\KeyedLib-1.0\lib.xml
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0\lib.xml
+
+# Localizations
+Locales\Locales.xml
+
+# Keyed Frame
 KeyedFrame.xml
-Core.lua
