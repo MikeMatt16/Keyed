@@ -4,7 +4,7 @@ KEYED_SORT_TYPE = KEYED_SORT_LEVEL;
 KEYED_TAB = KEYED_GUILD;
 KEYED_FRAME_PLAYER_HEIGHT = 16;
 KEYSTONES_TO_DISPLAY = 19;
-KEYED_SORT_ORDER_DESCENDING = false;
+KEYED_SORT_ORDER_DESCENDING = true;
 KEYED_SORT_FUNCTION = Keyed_SortByLevel;
 KEYED_LOCALE = GetKeyedLocale();
 KEYED_DEBUG_TABLE = {};
@@ -187,7 +187,7 @@ eventHandlers["PLAYER_LOGIN"] = function(self, ...)
 					for i = 1, select(1, BNGetNumFriends()) do
 						if select(6, BNGetFriendInfo(i)) == sender then
 							entry.battleTag, entry.accountName = select(2, BNGetFriendInfo(i));
-							friendsDB[guid] = entry;
+							friendsDB[indexer] = entry;
 						end
 					end
 				end
@@ -558,7 +558,7 @@ function Keyed_SortKeyed(sort)
 		KEYED_SORT_FUNCTION = Keyed_SortByDungeon
 	elseif sort == KEYED_SORT_LEVEL then
 		KEYED_SORT_FUNCTION = Keyed_SortByLevel
-	else error("Unexpected sort type. (sort=\"" .. tostring(sort) .. "\"") end
+	else error("Unexpected sort type. (sort=\"" .. tostring(sort or "nil") .. "\"") end
 
 	-- Update
 	KeystoneList_Update()
@@ -580,17 +580,25 @@ end
 --		b: the second entry
 ---------------------------
 function Keyed_SortByName(a, b)
-	local result = a.name > b.name								-- Compare by name first...
-	if a.name == b.name then
-		result = a.keystoneLevel < b.keystoneLevel				-- ... if name is same, compare by level...
-		if a.keystoneLevel == b.lekeystoneLevelvel then
-			result = a.keystoneDungeonId > b.keystoneDungeonId	-- ... if level is same, compare by dungeon...
+	local result = false;
+	if KEYED_SORT_ORDER_DESCENDING then
+		result = a.name > b.name;
+		if a.name == b.name then
+			result = a.keystoneLevel > b.keystoneLevel;
+			if a.keystoneLevel == b.keystoneLevel then
+				result = a.keystoneDungeonId > b.keystoneDungeonId;
+			end
+		end
+	else
+		result = a.name < b.name;
+		if a.name == b.name then
+			result = a.keystoneLevel < b.keystoneLevel;
+			if a.keystoneLevel == b.keystoneLevel then
+				result = a.keystoneDungeonId < b.keystoneDungeonId;
+			end
 		end
 	end
-
-	-- Descend?
-	if not KEYED_SORT_ORDER_DESCENDING then result = not result end
-	return result
+	return result;
 end
 
 ----------------------------
@@ -599,17 +607,25 @@ end
 --		b: the second entry
 ----------------------------
 function Keyed_SortByDungeon(a, b)
-	local result = a.keystoneDungeonId > b.keystoneDungeonId	-- Compare by dungeon first...
-	if a.keystoneDungeonId == b.keystoneDungeonId then
-		result = a.keystoneLevel < b.keystoneLevel				-- ... if dungeon is same, compare by level ...
-		if a.keystoneLevel == b.keystoneLevel then
-			result = a.name > b.name							-- ... if level is same, compare by name ...
+	local result = false;
+	if KEYED_SORT_ORDER_DESCENDING then
+		result = a.keystoneDungeonId > b.keystoneDungeonId;
+		if a.keystoneDungeonId == b.keystoneDungeonId then
+			result = a.name > b.name;
+			if a.name == b.name then
+				result = a.keystoneLevel > b.keystoneLevel;
+			end
+		end
+	else
+		result = a.keystoneDungeonId < b.keystoneDungeonId;
+		if a.keystoneDungeonId == b.keystoneDungeonId then
+			result = a.name < b.name;
+			if a.name == b.name then
+				result = a.keystoneLevel < b.keystoneLevel;
+			end
 		end
 	end
-
-	-- Descend?
-	if not KEYED_SORT_ORDER_DESCENDING then result = not result end
-	return result
+	return result;
 end
 
 ---------------------------
@@ -618,17 +634,25 @@ end
 --		b: the second entry
 ---------------------------
 function Keyed_SortByLevel(a, b)
-	local result = a.keystoneLevel < b.keystoneLevel;			-- Compare by level first...
-	if a.keystoneLevel == b.keystoneLevel then
-		result = a.name > b.name								-- ... if level is same, compare by name...
-		if a.name == b.name then
-			result = a.keystoneDungeonId > b.keystoneDungeonId	-- ... if name is same, compare by dungeon
+	local result = false;
+	if KEYED_SORT_ORDER_DESCENDING then
+		result = a.keystoneLevel > b.keystoneLevel;
+		if a.keystoneLevel == b.keystoneLevel then
+			result = a.name > b.name;
+			if a.name == b.name then
+				result = a.keystoneDungeonId > b.keystoneDungeonId;
+			end
+		end
+	else
+		result = a.keystoneLevel < b.keystoneLevel;
+		if a.keystoneLevel == b.keystoneLevel then
+			result = a.name < b.name;
+			if a.name == b.name then
+				result = a.keystoneDungeonId < b.keystoneDungeonId;
+			end
 		end
 	end
-
-	-- Descend?
-	if not KEYED_SORT_ORDER_DESCENDING then result = not result end
-	return result
+	return result;
 end
 
 ----------------------------------------------
