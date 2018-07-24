@@ -7,6 +7,7 @@ KEYSTONES_TO_DISPLAY = 19;
 KEYED_SORT_ORDER_DESCENDING = false;
 KEYED_SORT_FUNCTION = Keyed_SortByLevel;
 KEYED_LOCALE = GetKeyedLocale();
+KEYED_DEBUG_TABLE = {};
 
 local groupDB, guildDB, charactersDB, friendsDB = {}, {}, {}, {};
 local playerGuild, playerName, playerRealm, playerGuid;
@@ -58,30 +59,26 @@ local function LoadDatabases()
 	for guid, entry in pairs(KeyedDB.friends) do
 		friendsDB[guid] = entry;
 	end
-	if playerGuild then
-		for guid, entry in pairs(KeyedDB.guilds[playerRealm][playerGuild]) do
-			guildDB[guid] = entry;
-		end
-	end
 end
 
 eventHandlers["ADDON_LOADED"] = function(self, name)
-	if name == keyedName then
-		if not KeyedSV or KeyedSV ~= keyedSvVersion then
-			-- Initialize all databases
-			KeyedSV = keyedSvVersion;
-			KeyedDB = { 
+	if name ~= keyedName then return; end
+	tinsert(KEYED_DEBUG_TABLE, "addon loaded");
+	
+	-- Initialize/upgrade database
+	if not KeyedSV or KeyedSV ~= keyedSvVersion then
+		-- Initialize all databases
+		KeyedSV = keyedSvVersion;
+		KeyedDB = { 
 				icon = {
 					hide = false,
 				},
 				guilds = {},
 				friends = {},
 				characters = {},
-			};
-		end
+		};
 	end
-	svLoaded = true;	-- SavedVariables loaded
-
+	
 	-- Clean guild database of out-of-date entries
 	for _, realmTable in pairs(KeyedDB.guilds) do
 		for guildName, guildTable in pairs(realmTable) do
@@ -106,9 +103,41 @@ eventHandlers["ADDON_LOADED"] = function(self, name)
 			KeyedDB.characters[guid] = nil;
 		end
 	end
+
+	-- SavedVariables loaded
+	svLoaded = true;
+
+	-- Load immediate databases from saved variables.
+	LoadDatabases();
+end
+
+eventHandlers["PLAYER_GUILD_UPDATE"] = function(self, ...)
+	if not IsInGuild() then return; end
+	tinsert(KEYED_DEBUG_TABLE, "player guild update");
+	playerGuild = select(1, GetGuildInfo("player"));
+	if not playerGuild then return; end
+
+	-- Initialize realm and guild
+	KeyedDB.guilds[playerRealm] = KeyedDB.guilds[playerRealm] or {};
+	KeyedDB.guilds[playerRealm][playerGuild] = KeyedDB.guilds[playerRealm][playerGuild] or {};
+	
+	-- Load guild database from saved variables
+	for guid, entry in pairs(KeyedDB.guilds[playerRealm][playerGuild]) do
+		guildDB[guid] = entry;
+	end
+
+	-- Add guild members to KeyedLib
+	for guid, entry in pairs(guildDB) do
+		if entry.keystone and guid == entry.keystone.guid and guid ~= playerGuid then KeyedLib:AddGuildKeystone(entry.keystone); end
+	end
+	
+	-- Queue sync and update
+	KeyedLib:QueueSynchronization();
+	KeystoneList_Update();
 end
 
 eventHandlers["PLAYER_LOGIN"] = function(self, ...)
+	tinsert(KEYED_DEBUG_TABLE, "player login");
 	-- Minimap button
 	KeyedMinimapButton:Register(keyedName, keyedLDB, KeyedDB.icon);
 	KeyedFrameShowMinimapButton:SetChecked(not(KeyedDB.icon.hide));
@@ -116,26 +145,10 @@ eventHandlers["PLAYER_LOGIN"] = function(self, ...)
 	-- Load player information
 	playerGuid = string.sub(UnitGUID("player"), 8);
 	playerName, playerRealm = UnitFullName("player");
-	playerGuild = select(1, GetGuildInfo("player"));
-
-	-- Initialize realm and guild
-	KeyedDB.guilds[playerRealm] = KeyedDB.guilds[playerRealm] or {};
-	if playerGuild then
-		KeyedDB.guilds[playerRealm][playerGuild] = KeyedDB.guilds[playerRealm][playerGuild] or {};
-	end
-	playerLogin = true;
-
-	-- Load database from saved variables.
-	LoadDatabases();
-
+	
 	-- Add characters to KeyedLib
 	for guid, entry in pairs(charactersDB) do
 		if entry.keystone and guid == entry.keystone.guid and guid ~= playerGuid then KeyedLib:AddAltKeystone(entry.keystone); end
-	end
-
-	-- Add guild members to KeyedLib
-	for guid, entry in pairs(guildDB) do
-		if entry.keystone and guid == entry.keystone.guid and guid ~= playerGuid then KeyedLib:AddGuildKeystone(entry.keystone); end
 	end
 
 	-- Add character entry to characters and guild if applicable
@@ -153,14 +166,32 @@ eventHandlers["PLAYER_LOGIN"] = function(self, ...)
 		if sender and keystone then
 			local entry = { version = keyedDbVersion, keystone = keystone };
 			local indexer = keystone.guid;
+			local unitPrefix = channel == "PARTY" and "party" or "raid";
 
 			-- Check
 			if channel == "INSTANCE_CHAT" or channel == "RAID" or channel == "PARTY" then
-				groupDB[indexer] = entry;
+				for i = 1, GetNumGroupMembers() do
+					local unitGuid = UnitGUID(unitPrefix .. i);
+					if unitGuid then
+						if indexer == string.sub(unitGuid, 8) then
+							groupDB[unitGuid] = entry;
+						end
+					end
+				end
 			elseif channel == "GUILD" then
 				local time = (((guildDB or {})[indexer] or {}).keystone or {}).timeGenerated or 0;
 				if time < keystone.timeGenerated then guildDB[indexer] = entry; end
-			elseif channel == "BNET" or channel == "WHISPER" then
+			elseif channel == "BNET" then
+				local characterName, client, realmName = select(2, BNGetGameAccountInfo(sender));
+				if client and client == BNET_CLIENT_WOW then
+					for i = 1, select(1, BNGetNumFriends()) do
+						if select(6, BNGetFriendInfo(i)) == sender then
+							entry.battleTag, entry.accountName = select(2, BNGetFriendInfo(i));
+							friendsDB[guid] = entry;
+						end
+					end
+				end
+			elseif channel == "WHISPER" then
 				friendsDB[indexer] = entry;
 			end
 
@@ -173,7 +204,6 @@ eventHandlers["PLAYER_LOGIN"] = function(self, ...)
 	-- Queue sync and update
 	KeyedLib:QueueSynchronization();
 	KeystoneList_Update();
-	SaveDatabases();
 end
 
 eventHandlers["PLAYER_LOGOUT"] = function(self, ...)
@@ -233,6 +263,10 @@ function KeyedFrame_Options(input)
 				KeystoneList_Update();
 				SaveDatabases();
 			end
+		elseif arguments[1] == "test" then
+			for i, evt in ipairs(KEYED_DEBUG_TABLE) do
+				print(i, evt);
+			end
 		else
 			print(keyedText, KEYED_LOCALE["Incorrect Usage"]);
 		end
@@ -248,8 +282,31 @@ end
 ---------------------------------------
 function KeyedFrame_OnEvent(self, event, ...)
 	-- Check event
-	if event == "GROUP_ROSTER_UPDATE" or "GROUP_LEFT" then
-		groupDB = {};
+	if event == "GROUP_ROSTER_UPDATE" then
+		local guids = {};
+		local unitPrefix = IsInGroup() and "party" or "raid";
+		for i = 1, GetNumGroupMembers() do
+			local guid = UnitGUID(unitPrefix .. i);
+			if guid then
+				tinsert(guids, guid);
+			end
+		end
+		for guid, entry in pairs(groupDB) do
+			local contains = false;
+			for i = 1, #guids do
+				if guids[i] == guid then
+					contains = true;
+					break;
+				end
+				if not contains then
+					groupDB[guid] = nil;
+				end
+			end
+		end
+		KeystoneList_Update();
+	elseif event == "GROUP_LEFT" then
+		table.wipe(groupDB);
+		KeystoneList_Update();
 	elseif event == "CHALLENGE_MODE_MAPS_UPDATE" then
 		KeyedFrame_Update(self, event, ...)
 	end

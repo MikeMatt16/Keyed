@@ -26,7 +26,7 @@ local debugMode = false;	--[[Enabling debug mode will override the default behav
 
 local EVENT_HANDLERS = {};
 local MSG_PREFIX = "KeyedLib_2";
-local DELAY_LENGTH = 2;
+local DELAY_LENGTH = 3;
 local WEEK_SECONDS = 604800;
 local RESET_WEDNESDAY = 1500447600;
 local RESET_TUESDAY = 1500390000;
@@ -142,7 +142,11 @@ local function SendKeystone(requestSync, keystone, channel, target)
 		msgArray[15] = keystone.timeGenerated or "";
 
 		local msg = table.concat(msgArray, ",");
-		ChatThrottleLib:SendAddonMessage("BULK", MSG_PREFIX, msg, channel, target);
+		if channel == "BNET" then
+			BNSendGameData(target, MSG_PREFIX, msg);
+		else
+			ChatThrottleLib:SendAddonMessage("BULK", MSG_PREFIX, msg, channel, target);
+		end
 	end
 end
 
@@ -295,6 +299,18 @@ function lib:QueueSynchronization()
 	scheduleUpdate();
 end
 
+-- Friends list update
+EVENT_HANDLERS["FRIENDLIST_UPDATE"] = function()
+	friendsSynced = false;
+	scheduleUpdate();
+end
+
+-- Group update event
+EVENT_HANDLERS["GROUP_ROSTER_UPDATE"] = function()
+	groupSynced = false;
+	scheduleUpdate();
+end
+
 -- Group joined event
 EVENT_HANDLERS["GROUP_JOINED"] = function()
 	groupSynced = false;
@@ -357,7 +373,7 @@ EVENT_HANDLERS["CHALLENGE_MODE_MAPS_UPDATE"] = function(...)
 		if not(groupSynced) then
 			SendAllKeystones(1, groupChatChannel);
 		elseif isNew then
-			SendKeystone(1, playerKeystone, groupChatChannel);
+			SendKeystone(0, playerKeystone, groupChatChannel);
 		end
 		groupSynced = true;
 	end
@@ -366,8 +382,8 @@ EVENT_HANDLERS["CHALLENGE_MODE_MAPS_UPDATE"] = function(...)
 	if isNew or not(friendsSynced) then
 		debug("Friends sync...")
 		for i = 1, select(2, GetNumFriends()) do
-			local fullName = GetFriendInfo(i);
-			if not(string.match(fullname, "-")) then
+			local fullName = select(1, GetFriendInfo(i));
+			if not(string.match(fullName, "-")) then
 				fullName = fullName .. "-" .. PLAYER_REALM;
 			end
 
@@ -379,9 +395,10 @@ EVENT_HANDLERS["CHALLENGE_MODE_MAPS_UPDATE"] = function(...)
 		end
 
 		if BNConnected() then
-			for i = 1, BNGetNumFriends() do
-				local characterName, bnetIDGameAccount, client = select(5, BNGetFriendInfo(i));
-				if bnetIDGameAccount and characterName and client == "WoW" then
+			for i = 1, select(1, BNGetNumFriends()) do
+				local bnetIDGameAccount, client = select(6, BNGetFriendInfo(i));
+				if bnetIDGameAccount and client == BNET_CLIENT_WOW and CanCooperateWithGameAccount(bnetIDGameAccount) then
+					local presenceID select(16, BNGetGameAccountInfo(bnetIDGameAccount));
 					if friendsSynced then
 						SendKeystone(1, playerKeystone, "BNET", bnetIDGameAccount);
 					else
@@ -406,7 +423,7 @@ EVENT_HANDLERS["CHAT_MSG_ADDON"] = function(prefix, msg, channel, sender)
 	end
 end
 
--- Process incoming AddOn messages and extract keystones
+-- Process incoming Battle.net AddOn messages and extract keystones
 EVENT_HANDLERS["BN_CHAT_MSG_ADDON"] = function(prefix, msg, channel, sender)
 	if prefix == MSG_PREFIX and sender ~= PLAYER_NAME then
 		local msgParts = { strsplit(",", msg) };
@@ -414,7 +431,7 @@ EVENT_HANDLERS["BN_CHAT_MSG_ADDON"] = function(prefix, msg, channel, sender)
 		if msgParts[1] == "1" then
 			SendAllKeystones(0, "BNET", sender);
 		end
-		ProcessKeystoneMessage(msgParts, "BNET", characterName .. "-" .. realm);
+		ProcessKeystoneMessage(msgParts, "BNET", sender);
 	end
 end
 
