@@ -286,6 +286,7 @@ end
 --	Returns the current Mythic+ week index.
 -------------------------------------------
 function lib:GetWeeklyIndex()
+	if not LAUNCH_TIME then return 0; end	-- If LAUNCH_TIME isn't defined, then return zero.
 	return math.floor((GetServerTime() - LAUNCH_TIME) / WEEK_SECONDS);
 end
 
@@ -329,6 +330,10 @@ EVENT_HANDLERS["PLAYER_ENTERING_WORLD"] = scheduleUpdate()
 EVENT_HANDLERS["CHALLENGE_MODE_RESET"] = scheduleUpdate()
 EVENT_HANDLERS["CHALLENGE_MODE_COMPLETED"] = scheduleUpdate()
 EVENT_HANDLERS["CHALLENGE_MODE_START"] = scheduleUpdate()
+
+-- AddOn loaded event
+EVENT_HANDLERS["ADDON_LOADED"] = function()
+end
 
 -- Player Login event
 EVENT_HANDLERS["PLAYER_LOGIN"] = function()

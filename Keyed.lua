@@ -61,9 +61,47 @@ local function LoadDatabases()
 	end
 end
 
+local function OnKeystoneReceived(keystone, channel, sender)
+	if sender and keystone then
+		local entry = { version = keyedDbVersion, keystone = keystone };
+		local indexer = keystone.guid;
+		local unitPrefix = channel == "PARTY" and "party" or "raid";
+
+		-- Check
+		if channel == "INSTANCE_CHAT" or channel == "RAID" or channel == "PARTY" then
+			for i = 1, GetNumGroupMembers() do
+				local unitGuid = UnitGUID(unitPrefix .. i);
+				if unitGuid then
+					if indexer == string.sub(unitGuid, 8) then
+						groupDB[unitGuid] = entry;
+					end
+				end
+			end
+		elseif channel == "GUILD" then
+			local time = (((guildDB or {})[indexer] or {}).keystone or {}).timeGenerated or 0;
+			if time < keystone.timeGenerated then guildDB[indexer] = entry; end
+		elseif channel == "BNET" then
+			local characterName, client, realmName = select(2, BNGetGameAccountInfo(sender));
+			if client and client == BNET_CLIENT_WOW then
+				for i = 1, select(1, BNGetNumFriends()) do
+					if select(6, BNGetFriendInfo(i)) == sender then
+						entry.battleTag, entry.accountName = select(2, BNGetFriendInfo(i));
+						friendsDB[indexer] = entry;
+					end
+				end
+			end
+		elseif channel == "WHISPER" then
+			friendsDB[indexer] = entry;
+		end
+
+		-- Update
+		KeystoneList_Update();
+		SaveDatabases();
+	end
+end
+
 eventHandlers["ADDON_LOADED"] = function(self, name)
 	if name ~= keyedName then return; end
-	tinsert(KEYED_DEBUG_TABLE, "addon loaded");
 	
 	-- Initialize/upgrade database
 	if not KeyedSV or KeyedSV ~= keyedSvVersion then
@@ -78,7 +116,7 @@ eventHandlers["ADDON_LOADED"] = function(self, name)
 				characters = {},
 		};
 	end
-	
+
 	-- Clean guild database of out-of-date entries
 	for _, realmTable in pairs(KeyedDB.guilds) do
 		for guildName, guildTable in pairs(realmTable) do
@@ -103,12 +141,6 @@ eventHandlers["ADDON_LOADED"] = function(self, name)
 			KeyedDB.characters[guid] = nil;
 		end
 	end
-
-	-- SavedVariables loaded
-	svLoaded = true;
-
-	-- Load immediate databases from saved variables.
-	LoadDatabases();
 end
 
 eventHandlers["PLAYER_GUILD_UPDATE"] = function(self, ...)
@@ -137,7 +169,12 @@ eventHandlers["PLAYER_GUILD_UPDATE"] = function(self, ...)
 end
 
 eventHandlers["PLAYER_LOGIN"] = function(self, ...)
-	tinsert(KEYED_DEBUG_TABLE, "player login");
+	-- SavedVariables loaded
+	svLoaded = true;
+
+	-- Load immediate databases from saved variables.
+	LoadDatabases();
+
 	-- Minimap button
 	KeyedMinimapButton:Register(keyedName, keyedLDB, KeyedDB.icon);
 	KeyedFrameShowMinimapButton:SetChecked(not(KeyedDB.icon.hide));
@@ -162,44 +199,7 @@ eventHandlers["PLAYER_LOGIN"] = function(self, ...)
 	end
 
 	-- Listen for keystones
-	KeyedLib:AddKeystoneListener(function(keystone, channel, sender)
-		if sender and keystone then
-			local entry = { version = keyedDbVersion, keystone = keystone };
-			local indexer = keystone.guid;
-			local unitPrefix = channel == "PARTY" and "party" or "raid";
-
-			-- Check
-			if channel == "INSTANCE_CHAT" or channel == "RAID" or channel == "PARTY" then
-				for i = 1, GetNumGroupMembers() do
-					local unitGuid = UnitGUID(unitPrefix .. i);
-					if unitGuid then
-						if indexer == string.sub(unitGuid, 8) then
-							groupDB[unitGuid] = entry;
-						end
-					end
-				end
-			elseif channel == "GUILD" then
-				local time = (((guildDB or {})[indexer] or {}).keystone or {}).timeGenerated or 0;
-				if time < keystone.timeGenerated then guildDB[indexer] = entry; end
-			elseif channel == "BNET" then
-				local characterName, client, realmName = select(2, BNGetGameAccountInfo(sender));
-				if client and client == BNET_CLIENT_WOW then
-					for i = 1, select(1, BNGetNumFriends()) do
-						if select(6, BNGetFriendInfo(i)) == sender then
-							entry.battleTag, entry.accountName = select(2, BNGetFriendInfo(i));
-							friendsDB[indexer] = entry;
-						end
-					end
-				end
-			elseif channel == "WHISPER" then
-				friendsDB[indexer] = entry;
-			end
-
-			-- Update
-			KeystoneList_Update();
-			SaveDatabases();
-		end
-	end);
+	KeyedLib:AddKeystoneListener(OnKeystoneReceived);
 
 	-- Queue sync and update
 	KeyedLib:QueueSynchronization();
@@ -339,7 +339,10 @@ function KeyedFramePlayerButton_OnEnter(self, keystone)
 	local class = LOCALIZED_CLASS_NAMES_MALE[keystone.class]
 	local dungeon = C_ChallengeMode.GetMapUIInfo(keystone.keystoneDungeonId)
 	local faction = PLAYER_FACTION_GROUP[keystone.faction]
-	if keystone.faction then faction = PLAYER_FACTION_GROUP[1] else faction = PLAYER_FACTION_GROUP[2] end
+	if keystone.faction then faction = PLAYER_FACTION_GROUP[1] else faction = PLAYER_FACTION_GROUP[0] end
+	
+	-- Hacky catch, but it will help debug
+	if not faction then faction = "faction = " .. tostring(keystone.faction or "nil"); end	-- Hopefully faction will never be nil, but if it is...
 
 	if not KeyedFrame or not KeyedKeystoneTooltip then return end
 	KeyedKeystoneTooltip:SetOwner(KeyedFrame, "ANCHOR_NONE")
