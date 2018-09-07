@@ -436,10 +436,10 @@ function KeystoneList_Update()
 	if numKeystones > KEYSTONES_TO_DISPLAY then showScrollBar = 1 end
 
 	-- Prepare functions...
-	local SetDepleted = function(fontString) fontString:SetTextColor(0.6, 0.6, 0.6, 1.0) end
-	local SetHighlighted = function(fontString) fontString:SetTextColor(GameFontHighlightSmall:GetTextColor()) end
-	local SetClass = function(fontString, classTable) fontString:SetTextColor(classTable.r, classTable.g, classTable.b, classTable.a) end
-	local SetNormal = function(fontString) fontString:SetTextColor(GameFontNormalSmall:GetTextColor()) end
+	local SetDepleted = function(fontString) fontString:SetTextColor(0.6, 0.6, 0.6, 1.0); end
+	local SetHighlighted = function(fontString) fontString:SetTextColor(GameFontHighlightSmall:GetTextColor()); end
+	local SetClass = function(fontString, classTable) fontString:SetTextColor(classTable.r, classTable.g, classTable.b, classTable.a); end
+	local SetNormal = function(fontString) fontString:SetTextColor(GameFontNormalSmall:GetTextColor()); end
 
 	-- Loop through each button...
 	local keystoneOffset = FauxScrollFrame_GetOffset(KeystoneListScrollFrame)
