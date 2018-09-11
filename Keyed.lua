@@ -148,6 +148,7 @@ eventHandlers["PLAYER_GUILD_UPDATE"] = function(self, ...)
 	tinsert(KEYED_DEBUG_TABLE, "player guild update");
 	playerGuild = select(1, GetGuildInfo("player"));
 	if not playerGuild then return; end
+	if not playerRealm then playerName, playerRealm = UnitFullName("player"); end
 
 	-- Initialize realm and guild
 	KeyedDB.guilds[playerRealm] = KeyedDB.guilds[playerRealm] or {};
@@ -182,7 +183,7 @@ eventHandlers["PLAYER_LOGIN"] = function(self, ...)
 	-- Load player information
 	playerGuid = string.sub(UnitGUID("player"), 8);
 	playerName, playerRealm = UnitFullName("player");
-	
+
 	-- Add characters to KeyedLib
 	for guid, entry in pairs(charactersDB) do
 		if entry.keystone and guid == entry.keystone.guid and guid ~= playerGuid then KeyedLib:AddAltKeystone(entry.keystone); end
