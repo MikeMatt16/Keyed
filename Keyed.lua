@@ -3,17 +3,17 @@ KEYED_GUILD, KEYED_GROUP, KEYED_BNET, KEYED_ALTS = "GUILD", "PARTY", "BNET", "CH
 KEYED_SORT_TYPE = KEYED_SORT_LEVEL;
 KEYED_TAB = KEYED_GUILD;
 KEYED_FRAME_PLAYER_HEIGHT = 16;
-KEYSTONES_TO_DISPLAY = 19;
+LINES_TO_DISPLAY = 19;
 KEYED_SORT_ORDER_DESCENDING = true;
 KEYED_SORT_FUNCTION = Keyed_SortByLevel;
 KEYED_LOCALE = GetKeyedLocale();
 KEYED_DEBUG_TABLE = {};
 
-local groupDB, guildDB, charactersDB, friendsDB = {}, {}, {}, {};
+local recordDB, guildDB, charactersDB, friendsDB, groupDB = {}, {}, {}, {}, {};
 local playerGuild, playerName, playerRealm, playerGuid;
 local svLoaded, playerLogin = false, false;
-local keyedSvVersion = 1;
-local keyedDbVersion = 1;
+local keyedSvVersion = 2;
+local keyedDbVersion = 2;
 local keyedName = select(1, ...);
 local keyedText = "|cffd6266cKeyed|r";
 local eventHandlers = {};
@@ -47,24 +47,34 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 KeyedMinimapButton = LibStub("LibDBIcon-1.0");
 
 local function SaveDatabases()
+	KeyedDB.records = recordDB;
 	KeyedDB.characters = charactersDB;
 	KeyedDB.friends = friendsDB;
-	if playerGuild then KeyedDB.guilds[playerRealm][playerGuild] = guildDB; end
+	KeyedDB.guilds = guildDB;
 end
 
 local function LoadDatabases()
-	for guid, entry in pairs(KeyedDB.characters) do
-		charactersDB[guid] = entry;
+	for name, entry in pairs(KeyedDB.records) do
+		recordDB[name] = entry;
 	end
-	for guid, entry in pairs(KeyedDB.friends) do
-		friendsDB[guid] = entry;
+	for realm, guildTable in pairs(KeyedDB.guilds) do
+		guildDB[realm] = guildTable;
 	end
+	for name, entry in pairs(KeyedDB.characters) do
+		charactersDB[name] = entry;
+	end
+	for name, entry in pairs(KeyedDB.friends) do
+		friendsDB[name] = entry;
+	end
+
+	guildDB[playerRealm] = guildDB[playerRealm] or {};
 end
 
 local function OnKeystoneReceived(keystone, channel, sender)
 	if sender and keystone then
 		local entry = { version = keyedDbVersion, keystone = keystone };
-		local indexer = keystone.guid;
+		local recordGuild = keystone.guildName or "";
+		local recordRealm = select(2, strpslit("-", keystone.name));
 		local unitPrefix = channel == "PARTY" and "party" or "raid";
 
 		-- Check
@@ -77,21 +87,37 @@ local function OnKeystoneReceived(keystone, channel, sender)
 					end
 				end
 			end
-		elseif channel == "GUILD" then
-			local time = (((guildDB or {})[indexer] or {}).keystone or {}).timeGenerated or 0;
-			if time < keystone.timeGenerated then guildDB[indexer] = entry; end
-		elseif channel == "BNET" then
-			local characterName, client, realmName = select(2, BNGetGameAccountInfo(sender));
-			if client and client == BNET_CLIENT_WOW then
-				for i = 1, select(1, BNGetNumFriends()) do
-					if select(6, BNGetFriendInfo(i)) == sender then
-						entry.battleTag, entry.accountName = select(2, BNGetFriendInfo(i));
-						friendsDB[indexer] = entry;
+		else
+			-- Update record
+			local time = (((recordDB or {})[keystone.name] or {}).keystone or {}).timeGenerated or 0;
+			if time < keystone.timeGenerated then
+				recordDB[keystone.name] = entry;
+			end
+
+			-- Check channel
+			if channel == "GUILD" then
+				guildDB = guildDB or {};
+				guildDB[recordRealm] = guildDB[recordRealm] or {};
+				if recordGuild ~= "" then
+					guildDB[recordRealm][recordGuild][keystone.name] = keystone.name;
+				end
+			elseif channel == "BNET" then
+				local characterName, client, realmName = select(2, BNGetGameAccountInfo(sender));
+				if client and client == BNET_CLIENT_WOW then
+					for i = 1, select(1, BNGetNumFriends()) do
+						if select(6, BNGetFriendInfo(i)) == sender then
+							local battleTag, accountName = select(2, BNGetFriendInfo(i));
+							friendsDB[battleTag] = friendsDB[battleTag] or {
+								name = accountName,
+								characters = {},
+							};
+							friendsDB[battleTag].characters[keystone.name] = keystone.name;
+						end
 					end
 				end
+			elseif channel == "WHISPER" then
+				-- friendsDB[indexer] = entry;
 			end
-		elseif channel == "WHISPER" then
-			friendsDB[indexer] = entry;
 		end
 
 		-- Update
@@ -111,57 +137,59 @@ eventHandlers["ADDON_LOADED"] = function(self, name)
 				icon = {
 					hide = false,
 				},
+				records = {},
 				guilds = {},
 				friends = {},
 				characters = {},
 		};
 	end
 
-	-- Clean guild database of out-of-date entries
-	for _, realmTable in pairs(KeyedDB.guilds) do
-		for guildName, guildTable in pairs(realmTable) do
-			for guid, entry in pairs(guildTable) do
-					if (entry.version or 0) ~= keyedDbVersion then
-						realmTable[guid] = nil;
-					end
-			end
-		end
-	end
+	-- Get or create database entries
+	KeyedDB.records = KeyedDB.records or {};
+	KeyedDB.guilds = KeyedDB.guilds or {};
+	KeyedDB.friends = KeyedDB.friends or {};
+	KeyedDB.characters = KeyedDB.characters or {};
 
-	-- Clean friends database of out-of-date entries
-	for guid, entry in pairs(KeyedDB.friends) do
+	--Clean common records
+	for guid, entry in pairs(KeyedDB.records) do
 		if (entry.version or 0) ~= keyedDbVersion then
-			KeyedDB.friends[guid] = nil;
-		end
-	end
-
-	-- Clean characters database of out-of-date entries
-	for guid, entry in pairs(KeyedDB.characters) do
-		if (entry.version or 0) ~= keyedDbVersion then
-			KeyedDB.characters[guid] = nil;
+			KeyedDB.records[guid] = nil;
 		end
 	end
 end
 
 eventHandlers["PLAYER_GUILD_UPDATE"] = function(self, ...)
 	if not IsInGuild() then return; end
-	tinsert(KEYED_DEBUG_TABLE, "player guild update");
 	playerGuild = select(1, GetGuildInfo("player"));
 	if not playerGuild then return; end
 	if not playerRealm then playerName, playerRealm = UnitFullName("player"); end
 
-	-- Initialize realm and guild
-	KeyedDB.guilds[playerRealm] = KeyedDB.guilds[playerRealm] or {};
-	KeyedDB.guilds[playerRealm][playerGuild] = KeyedDB.guilds[playerRealm][playerGuild] or {};
-	
-	-- Load guild database from saved variables
-	for guid, entry in pairs(KeyedDB.guilds[playerRealm][playerGuild]) do
-		guildDB[guid] = entry;
-	end
+	-- Check for guild
+	if playerGuild then
+		-- Initialize realm and guild
+		guildDB[playerRealm][playerGuild] = guildDB[playerRealm][playerGuild] or {};
 
-	-- Add guild members to KeyedLib
-	for guid, entry in pairs(guildDB) do
-		if entry.keystone and guid == entry.keystone.guid and guid ~= playerGuid then KeyedLib:AddGuildKeystone(entry.keystone); end
+		-- Add character entry to characters and guild if applicable
+		local keystone = KeyedLib:GetPlayerKeystone();
+		local entry = { version = keyedDbVersion, keystone = keystone };
+		if keystone then
+			recordDB[keystone.name] = entry;
+			charactersDB[keystone.name] = keystone.name;
+			if playerGuild then
+				guildDB[playerRealm][playerGuild][keystone.name] = keystone.name;
+			end
+		end
+
+		-- Add guild members to KeyedLib
+		for realm, guildList in pairs(guildDB) do
+			for _, entry in pairs(guildList) do
+				if recordDB[entry] then
+					if recordDB[entry].keystone and recordDB[entry].keystone.guid ~= playerGuid then
+						KeyedLib:AddGuildKeystone(recordDB[entry].keystone);
+					end
+				end
+			end
+		end
 	end
 	
 	-- Queue sync and update
@@ -173,6 +201,10 @@ eventHandlers["PLAYER_LOGIN"] = function(self, ...)
 	-- SavedVariables loaded
 	svLoaded = true;
 
+	-- Load player information
+	playerGuid = string.sub(UnitGUID("player"), 8);
+	playerName, playerRealm = UnitFullName("player");
+
 	-- Load immediate databases from saved variables.
 	LoadDatabases();
 
@@ -180,22 +212,10 @@ eventHandlers["PLAYER_LOGIN"] = function(self, ...)
 	KeyedMinimapButton:Register(keyedName, keyedLDB, KeyedDB.icon);
 	KeyedFrameShowMinimapButton:SetChecked(not(KeyedDB.icon.hide));
 
-	-- Load player information
-	playerGuid = string.sub(UnitGUID("player"), 8);
-	playerName, playerRealm = UnitFullName("player");
-
 	-- Add characters to KeyedLib
-	for guid, entry in pairs(charactersDB) do
-		if entry.keystone and guid == entry.keystone.guid and guid ~= playerGuid then KeyedLib:AddAltKeystone(entry.keystone); end
-	end
-
-	-- Add character entry to characters and guild if applicable
-	local keystone = KeyedLib:GetPlayerKeystone();
-	local entry = { version = keyedDbVersion, keystone = keystone };
-	if keystone and keystone.guid then
-		charactersDB[keystone.guid] = entry;
-		if playerGuild then
-			guildDB[keystone.guid] = entry;
+	for _, entry in pairs(charactersDB) do
+		if entry.keystone and entry.keystone.guid ~= playerGuid then
+			KeyedLib:AddAltKeystone(entry.keystone); 
 		end
 	end
 
@@ -254,6 +274,7 @@ function KeyedFrame_Options(input)
 		elseif arguments[1] == "clear" then
 			if arguments[2] == "all" then
 				-- Wipe databases...
+				table.wipe(recordDB or {});
 				table.wipe(guildDB or {});
 				table.wipe(friendsDB or {});
 				table.wipe(charactersDB or {});
@@ -263,10 +284,12 @@ function KeyedFrame_Options(input)
 				-- Update keystone list
 				KeystoneList_Update();
 				SaveDatabases();
+			else
+				print(keyedText, KEYED_LOCALE["Incorrect Usage"]);
 			end
 		elseif arguments[1] == "test" then
 			for i, evt in ipairs(KEYED_DEBUG_TABLE) do
-				print(i, evt);
+				print(i .. ":", evt);
 			end
 		else
 			print(keyedText, KEYED_LOCALE["Incorrect Usage"]);
@@ -335,6 +358,7 @@ end
 --		keystone: The player's keystone entry.
 -------------------------------------------------
 function KeyedFramePlayerButton_OnEnter(self, keystone)
+	if not keystone then return; end
 	local name, realm = strsplit("-", keystone.name, 2)
 	local classColor = RAID_CLASS_COLORS[keystone.class]
 	local class = LOCALIZED_CLASS_NAMES_MALE[keystone.class]
@@ -349,7 +373,7 @@ function KeyedFramePlayerButton_OnEnter(self, keystone)
 	KeyedKeystoneTooltip:SetOwner(KeyedFrame, "ANCHOR_NONE")
 	KeyedKeystoneTooltip:SetPoint("LEFT", KeyedFrame:GetName(), "RIGHT", 2, 0)
 	KeyedKeystoneTooltip:AddLine(name, classColor.r, classColor.g, classColor.b)
-	if(keystone.guildName) then	KeyedKeystoneTooltip:AddLine(keystone.guildName, 1, 1, 1) end
+	if keystone.guildName then KeyedKeystoneTooltip:AddLine(keystone.guildName, 1, 1, 1) end
 	KeyedKeystoneTooltip:AddLine(strjoin(" ", LEVEL, keystone.level, class), 1, 1, 1)
 	KeyedKeystoneTooltip:AddLine(gsub(ITEM_LEVEL, "%%d", keystone.ilvlEquipped .. "/" .. keystone.ilvl), 1, 1, 1)
 	KeyedKeystoneTooltip:AddLine(strjoin(" ", faction, realm), 1, 1, 1)
@@ -397,7 +421,7 @@ function KeystoneListFrame_OnLoad(self)
 	KeystoneListFrame:RegisterForDrag("LeftButton")
 
 	-- Create List Items
-	for i = 2, KEYSTONES_TO_DISPLAY do
+	for i = 2, LINES_TO_DISPLAY do
 		local button = CreateFrame ("Button", "KeystoneListFrameButton" .. i, KeystoneListFrame, "KeyedFramePlayerButtonTemplate")
 		button:SetID (i)
 		button:SetPoint ("TOP", _G["KeystoneListFrameButton" .. (i - 1)], "BOTTOM")
@@ -423,10 +447,10 @@ function KeystoneList_Update()
 	local level = ""
 
 	-- Get Database...
-	if KEYED_TAB == KEYED_GUILD then
-		numKeystones, keystoneData = KeyedFrame_GetKeystoneData(guildDB);
+	if KEYED_TAB == KEYED_GUILD and playerGuild and playerRealm then
+		numKeystones, keystoneData = KeyedFrame_GetKeystoneData(guildDB[playerRealm][playerGuild]);
 	elseif KEYED_TAB == KEYED_BNET then
-		numKeystones, keystoneData = KeyedFrame_GetKeystoneData(friendsDB);
+		numKeystones, keystoneData = KeyedFrame_GetFriendData(friendsDB);
 	elseif KEYED_TAB == KEYED_GROUP then
 		numKeystones, keystoneData = KeyedFrame_GetKeystoneData(groupDB);
 	elseif KEYED_TAB == KEYED_ALTS then 
@@ -434,7 +458,7 @@ function KeystoneList_Update()
 	end
 
 	-- Show scrollbar?
-	if numKeystones > KEYSTONES_TO_DISPLAY then showScrollBar = 1 end
+	if numKeystones > LINES_TO_DISPLAY then showScrollBar = 1 end
 
 	-- Prepare functions...
 	local SetDepleted = function(fontString) fontString:SetTextColor(0.6, 0.6, 0.6, 1.0); end
@@ -444,7 +468,7 @@ function KeystoneList_Update()
 
 	-- Loop through each button...
 	local keystoneOffset = FauxScrollFrame_GetOffset(KeystoneListScrollFrame)
-	for i=1, KEYSTONES_TO_DISPLAY do
+	for i=1, LINES_TO_DISPLAY do
 
 		-- Get Button elements
 		keystoneIndex = keystoneOffset + i
@@ -464,6 +488,7 @@ function KeystoneList_Update()
 
 		-- Check keystone
 		if keystoneIndex <= numKeystones and keystoneData[keystoneIndex].keystoneWeekIndex >= KeyedLib:GetWeeklyIndex() then
+
 			-- Get properties from keystone
 			name, realm = strsplit("-",keystoneData[keystoneIndex].name, 2)
 			if realm == playerRealm then button.playerName = name else button.playerName = name .. "-" .. realm end
@@ -488,7 +513,7 @@ function KeystoneList_Update()
 	else KeyedFrameColumn_SetWidth (KeyedFrameColumnHeader2, 190) end
 
 	-- Call SharedXML FauxScrollFrame_Update
-	FauxScrollFrame_Update(KeystoneListScrollFrame, numKeystones, KEYSTONES_TO_DISPLAY, KEYED_FRAME_PLAYER_HEIGHT);
+	FauxScrollFrame_Update(KeystoneListScrollFrame, numKeystones, LINES_TO_DISPLAY, KEYED_FRAME_PLAYER_HEIGHT);
 end
 
 ---------------------------------------------
@@ -511,20 +536,53 @@ function KeyedFrameTab_SetWidth(frame, width)
 	_G[frame:GetName () .. "Middle"]:SetWidth (width - 9);
 end
 
+---------------------------------------------------------------
+-- KeyedFrame_GetFriendData(db)
+--		db: The friend database to retrieve character data from
+---------------------------------------------------------------
+function KeyedFrame_GetFriendData(db)
+	local number, data = 0, {};
+	local keystone = nil;
+
+	-- Loop through Database
+	if db then
+		for id, friend in pairs(db) do
+			if friend.name and friend.characters then
+				for _, entry in pairs(friend.characters) do
+					if recordDB[entry] and recordDB[entry].keystone then
+						keystone = recordDB[entry].keystone;
+						if keystone.keystoneLevel > 0 then
+							table.insert(data, keystone);
+							number = number + 1;
+						end
+					end
+				end
+			end
+		end
+	end
+
+	-- return results
+	return number, data;
+end
+
 ------------------------------------------------------
 -- KeyedFrame_GetKeystoneData(db)
 --		db: The database to retrieve entries data from
 ------------------------------------------------------
 function KeyedFrame_GetKeystoneData(db)
-	local number = 0;
-	local data = {};
+	local number, data = 0, {};
 
 	-- Loop through database
 	if db then
-		for guid, entry in pairs(db) do
-			if guid and entry and entry.keystone.keystoneLevel > 0 then
-				number = number + 1;
-				table.insert(data, entry.keystone);
+		for _, entry in pairs(db) do
+			if _ and entry then
+				if recordDB[entry] and recordDB[entry].keystone then
+					keystone = recordDB[entry].keystone;
+					if keystone.keystoneLevel > 0 then
+						table.insert(data, keystone);
+						number = number + 1;
+					end
+				end
 			end
 		end
 	end

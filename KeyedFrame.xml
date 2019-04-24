@@ -118,12 +118,13 @@
     </Anchors>
     <Layers>
       <Layer level="BORDER" textureSubLevel="1">
-        <Texture name="$parentBtnCornerLeft" inherits="UI-Frame-BtnCornerLeft">
+        <!--
+        <Texture name="$parentBtnCornerLeft" inherits="UI-Frame-TopCornerLeft">
           <Anchors>
             <Anchor point="BOTTOMLEFT" x="-2" y="-1"/>
           </Anchors>
         </Texture>
-        <Texture name="$parentBtnCornerRight" inherits="UI-Frame-BtnCornerRight">
+        <Texture name="$parentBtnCornerRight" inherits="UI-Frame-TopCornerRight">
           <Anchors>
             <Anchor point="BOTTOMRIGHT" x="0" y="-1"/>
           </Anchors>
@@ -134,6 +135,7 @@
             <Anchor point="BOTTOMRIGHT" relativeTo="$parentBtnCornerRight" relativePoint="BOTTOMLEFT"/>
           </Anchors>
         </Texture>
+        -->
       </Layer>
       <Layer level="OVERLAY" textureSubLevel="-1">
         <Texture name="$parentIcon" file="Interface\AddOns\Keyed\Textures\Keyed-Portrait">
