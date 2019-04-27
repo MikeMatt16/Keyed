@@ -34,7 +34,7 @@ local KEYSTONE_ITEM_ID = 158923;
 local ALT_KEYSTONES = {};
 local GUILD_KEYSTONES = {};
 local LISTENERS = {};
-local PLAYER_NAME,PLAYER_REALM;
+local PLAYER_NAME, PLAYER_REALM, PLAYER_GUILD;
 local LAUNCH_TIME;
 local PLAYER_GUID;
 local delayedRun = 0;
@@ -218,7 +218,7 @@ end
 --	Gets and returns the player's guild.
 ----------------------------------------
 function lib:GetPlayerGuild()
-	return PLAYER_GUILD;
+	return PLAYER_GUILD or "";
 end
 
 ---------------------------------------------------
@@ -320,6 +320,7 @@ end
 
 -- Guild update event
 EVENT_HANDLERS["PLAYER_GUILD_UPDATE"] = function()
+	PLAYER_GUILD = select(1, GetGuildInfo("player"));
 	guildSynced = false;
 	scheduleUpdate();
 end
@@ -347,7 +348,6 @@ EVENT_HANDLERS["PLAYER_LOGIN"] = function()
 	PLAYER_REALM = realm;
 	_, PLAYER_CLASS = UnitClass("player");
 	PLAYER_GUID = string.sub(UnitGUID("player"), 8);
-	PLAYER_GUILD = select(1, GetGuildInfo("player"));
 
 	-- Register chat prefix
 	C_ChatInfo.RegisterAddonMessagePrefix(MSG_PREFIX);

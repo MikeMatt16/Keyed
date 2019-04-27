@@ -68,13 +68,16 @@ local function LoadDatabases()
 	end
 
 	guildDB[playerRealm] = guildDB[playerRealm] or {};
+	if playerGuild then
+		guildDB[playerRealm][playerGuild] = guildDB[playerRealm][playerGuild] or {};
+	end
 end
 
 local function OnKeystoneReceived(keystone, channel, sender)
 	if sender and keystone then
 		local entry = { version = keyedDbVersion, keystone = keystone };
 		local recordGuild = keystone.guildName or "";
-		local recordRealm = select(2, strpslit("-", keystone.name));
+		local recordRealm = select(2, strsplit("-", keystone.name));
 		local unitPrefix = channel == "PARTY" and "party" or "raid";
 
 		-- Check
@@ -171,10 +174,7 @@ eventHandlers["PLAYER_GUILD_UPDATE"] = function(self, ...)
 
 		-- Add character entry to characters and guild if applicable
 		local keystone = KeyedLib:GetPlayerKeystone();
-		local entry = { version = keyedDbVersion, keystone = keystone };
 		if keystone then
-			recordDB[keystone.name] = entry;
-			charactersDB[keystone.name] = keystone.name;
 			if playerGuild then
 				guildDB[playerRealm][playerGuild][keystone.name] = keystone.name;
 			end
@@ -204,6 +204,7 @@ eventHandlers["PLAYER_LOGIN"] = function(self, ...)
 	-- Load player information
 	playerGuid = string.sub(UnitGUID("player"), 8);
 	playerName, playerRealm = UnitFullName("player");
+	playerGuild = select(1, GetGuildInfo("player"));	-- This won't be available until the PLAYER_GUILD_UPDATE event, unless /reload
 
 	-- Load immediate databases from saved variables.
 	LoadDatabases();
@@ -212,10 +213,17 @@ eventHandlers["PLAYER_LOGIN"] = function(self, ...)
 	KeyedMinimapButton:Register(keyedName, keyedLDB, KeyedDB.icon);
 	KeyedFrameShowMinimapButton:SetChecked(not(KeyedDB.icon.hide));
 
+	-- Add player's keystone
+	local entry = { version = keyedDbVersion, keystone = KeyedLib:GetPlayerKeystone() };
+	if entry.keystone then
+		recordDB[entry.keystone.name] = entry;
+		charactersDB[entry.keystone.name] = entry.keystone.name;
+	end
+
 	-- Add characters to KeyedLib
-	for _, entry in pairs(charactersDB) do
-		if entry.keystone and entry.keystone.guid ~= playerGuid then
-			KeyedLib:AddAltKeystone(entry.keystone); 
+	for _, name in pairs(charactersDB) do
+		if recordDB[name] and recordDB[name].keystone and recordDB[name].keystone.guid ~= playerGuid then
+			KeyedLib:AddAltKeystone(recordDB[name].keystone);
 		end
 	end
 
