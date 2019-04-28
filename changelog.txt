@@ -1,4 +1,4 @@
 Keyed 1.10.3 Release
 
-Added auto-packaging (Yay to automation!)
+Ipmlemented auto-packaging (Yay to automation!)
 Changed version from 1.10.3 beta 1 to 1.10.3
