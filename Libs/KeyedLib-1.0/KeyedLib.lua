@@ -44,9 +44,11 @@ local guildSynced, groupSynced, friendsSynced = false, false, false;
 local playerKeystone = nil;
 
 local function debug(...)
+	--@debug@
 	if standalone or debugMode then
 		print("|cffd9d1ff[".. MAJOR .."]|r", ...);
 	end
+	--@end-debug@
 end
 
 local function scheduleUpdate()
