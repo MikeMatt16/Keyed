@@ -4,7 +4,7 @@ package-as: Keyed
 manual-changelog: changelog.txt
 
 ignore:
-	readme
+	- readme
 
 externals:
 	Libs/CallbackHandler:
