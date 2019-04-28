@@ -2,3 +2,6 @@
 
 package-as: Keyed
 manual-changelog: changelog.txt
+
+ignore:
+	readme
