@@ -1,0 +1,4 @@
+# Keyed package meta yaml
+
+package-as: Keyed
+manual-changelog: changelog.txt

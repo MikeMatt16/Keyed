@@ -295,10 +295,12 @@ function KeyedFrame_Options(input)
 			else
 				print(keyedText, KEYED_LOCALE["Incorrect Usage"]);
 			end
+		--@debug
 		elseif arguments[1] == "test" then
 			for i, evt in ipairs(KEYED_DEBUG_TABLE) do
 				print(i .. ":", evt);
 			end
+		--@end-debug@
 		else
 			print(keyedText, KEYED_LOCALE["Incorrect Usage"]);
 		end
