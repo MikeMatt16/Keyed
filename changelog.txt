@@ -1,6 +1,8 @@
-Keyed 1.10.3 Release 1
+Keyed 1.10.3 Release 2
 
-Ipmlemented auto-packaging (Yay to automation!)
-Changed version from 1.10.3 beta 1 to 1.10.3 beta 3
-Fixed player weekly best level
-Added best weekly and current keystone to Keyed icon tooltip
+* Implemented auto-packaging (Yay to automation!)
+* Changed version to 1.10.3
+* Fixed player weekly best level
+* Added best weekly and current keystone to Keyed icon tooltip
+* Added more options to the '/keyed clear' command
+* Fixed TOC version

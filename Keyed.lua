@@ -286,14 +286,40 @@ function KeyedFrame_Options(input)
 		-- Check 1st argument (version, clear/wipe)
 		if arguments[1] == "help" then
 			print(keyedText, KEYED_LOCALE["Commands"]);
-			for i,v in pairs(KEYED_LOCALE.commands) do print(v); end
+			for i = 1, #KEYED_LOCALE.commands do
+				print(KEYED_LOCALE.commands[i]);
+			end
 		elseif arguments[1] == "version" then
 			local version = GetAddOnMetadata("Keyed", "Version")
 			if version then 
 				print(keyedText, KEYED_LOCALE["Version"], version);
 			end
 		elseif arguments[1] == "clear" then
-			if arguments[2] == "all" then
+			if arguments[2] == "guild" then
+				-- Wipe guild
+				table.wipe(guildDB or {});
+				print(keyedText, KEYED_LOCALE["Database Wiped"]);
+
+				-- Update keystone list
+				KeystoneList_Update();
+				SaveDatabases();
+			elseif arguments[2] == "friends" then
+				-- Wipe friends
+				table.wipe(friendsDB or {});
+				print(keyedText, KEYED_LOCALE["Database Wiped"]);
+
+				-- Update keystone list
+				KeystoneList_Update();
+				SaveDatabases();
+			elseif arguments[2] == "characters" then
+				-- Wipe characters
+				table.wipe(charactersDB or {});
+				print(keyedText, KEYED_LOCALE["Database Wiped"]);
+
+				-- Update keystone list
+				KeystoneList_Update();
+				SaveDatabases();
+			elseif arguments[2] == "all" then
 				-- Wipe databases...
 				table.wipe(recordDB or {});
 				table.wipe(guildDB or {});
@@ -307,6 +333,7 @@ function KeyedFrame_Options(input)
 				SaveDatabases();
 			else
 				print(keyedText, KEYED_LOCALE["Incorrect Usage"]);
+				print(KEYED_LOCALE.commands[4]);
 			end
 		--@debug
 		elseif arguments[1] == "test" then
