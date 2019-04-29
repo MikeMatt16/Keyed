@@ -4,8 +4,8 @@ package-as: Keyed
 manual-changelog: changelog.txt
 
 ignore:
-	- readme
-	- changelog.txt
+- readme.md
+- changelog.txt
 #
 #externals:
 #	Libs/CallbackHandler:
