@@ -1,4 +1,6 @@
-Keyed 1.10.3 Release
+Keyed 1.10.3 Beta 3
 
 Ipmlemented auto-packaging (Yay to automation!)
-Changed version from 1.10.3 beta 1 to 1.10.3
+Changed version from 1.10.3 beta 1 to 1.10.3 beta 3
+Fixed player weekly best level
+Added best weekly and current keystone to Keyed icon tooltip
