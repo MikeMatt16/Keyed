@@ -1,4 +1,4 @@
-Keyed 1.10.3 Release 2
+Keyed 1.10.3 Release 3
 
 * Implemented auto-packaging (Yay to automation!)
 * Changed version to 1.10.3
@@ -6,3 +6,4 @@ Keyed 1.10.3 Release 2
 * Added best weekly and current keystone to Keyed icon tooltip
 * Added more options to the '/keyed clear' command
 * Fixed TOC version
+* Changed Keyed Icon

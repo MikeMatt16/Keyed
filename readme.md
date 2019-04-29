@@ -6,4 +6,5 @@ Have guild members and friends install the AddOn. It isn't possible for Keyed to
 
 ## Commands
 * `/keyed` will show the Keyed User Interface.
-* `/keyed clear <db>` will clear the specified Keyed database. Specific options for this command are `guild`, `friends`, `characters`, or `all`
+* `/keyed help` will display a list of commands.
+* `/keyed clear <db>` will clear the specified Keyed database. Specific options for this command are `guild`, `friends`, `characters`, or `all`.

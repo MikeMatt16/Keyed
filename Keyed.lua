@@ -21,7 +21,7 @@ local challengeModeMaps = {};
 local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 	type = "launcher",
 	text = "Keyed",
-	icon = "Interface\\AddOns\\Keyed\\Textures\\Keyed-Portrait",
+	icon = "Interface\\AddOns\\Keyed\\Textures\\Keyed-Button",
 	OnClick = function(self, button, down)
 		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 		if button == "LeftButton" then
