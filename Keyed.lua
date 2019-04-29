@@ -31,7 +31,7 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 			end
 		elseif button == "RightButton" then
 			local keystoneLink = KeyedLib:GetKeystoneLink();
-			if keystoneLink then
+			if keystoneLink and ChatFrame1EditBox then
 				ChatFrame1EditBox:Show()
 				ChatFrame1EditBox:SetFocus()
 				ChatFrame1EditBox:Insert(keystoneLink)
@@ -39,9 +39,22 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 		end
 	end,
 	OnTooltipShow = function(tt)
-		tt:AddLine(keyedText, 1, 1, 1);
+		tt:AddLine(keyedText);
 		tt:AddLine(KEYED_LOCALE.MinimapLine1);
 		tt:AddLine(KEYED_LOCALE.MinimapLine2);
+		local keystone = KeyedLib:GetPlayerKeystone();
+		if keystone then
+			tt:AddLine(" ")
+			tt:AddLine(KEYED_LOCALE["Current Keystone"])
+			tt:AddLine("    " .. C_ChallengeMode.GetMapUIInfo(keystone.keystoneDungeonId) .. " +" .. keystone.keystoneLevel, 1, 1, 1)
+			tt:AddLine(" ")
+			tt:AddLine(KEYED_LOCALE["Weekly Best"])
+			if keystone.bestKeystoneLevel == 0 then
+				tt:AddLine("    " .. NONE, 0.6, 0.6, 0.6)
+			else
+				tt:AddLine("    " .. C_ChallengeMode.GetMapUIInfo(keystone.bestKeystoneDungeonId) .. " +" .. keystone.bestKeystoneLevel, 1, 1, 1)
+			end
+		end
 	end,
 });
 KeyedMinimapButton = LibStub("LibDBIcon-1.0");
