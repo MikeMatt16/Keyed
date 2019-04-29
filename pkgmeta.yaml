@@ -7,10 +7,6 @@ ignore:
 - readme.md
 - changelog.txt
 
-externals:
-	Libs/CallbackHandler:
-		url: https://www.wowace.com/projects/callbackhandler
-#
 #externals:
 #	Libs/CallbackHandler:
 #		url: https://www.wowace.com/projects/callbackhandler
