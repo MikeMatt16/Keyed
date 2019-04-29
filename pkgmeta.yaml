@@ -3,17 +3,17 @@
 package-as: Keyed
 manual-changelog: changelog.txt
 
-#ignore:
-#	- readme
-#
-#externals:
-#	Libs/CallbackHandler:
-#		url: https://www.wowace.com/projects/callbackhandler
-#	Libs/ChatThrottleLib:
-#		url: https://www.wowace.com/projects/chatthrottlelib
-#	Libs/LibDataBroker:
-#		url: https://www.wowace.com/projects/libdatabroker-1-1
-#	Libs/LibDBIcon:
-#		url: https://www.wowace.com/projects/libdbicon-1-0
-#	Libs/LibRealmInfo:
-#		url: https://wow.curseforge.com/projects/librealminfo
+ignore:
+	- readme
+
+externals:
+	Libs/CallbackHandler:
+		url: https://www.wowace.com/projects/callbackhandler
+	Libs/ChatThrottleLib:
+		url: https://www.wowace.com/projects/chatthrottlelib
+	Libs/LibDataBroker:
+		url: https://www.wowace.com/projects/libdatabroker-1-1
+	Libs/LibDBIcon:
+		url: https://www.wowace.com/projects/libdbicon-1-0
+	Libs/LibRealmInfo:
+		url: https://wow.curseforge.com/projects/librealminfo

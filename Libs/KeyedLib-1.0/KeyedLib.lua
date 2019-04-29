@@ -56,19 +56,7 @@ local function scheduleUpdate()
 end
 
 local function GetPlayerRecord()
-	local record = {};
-	local sortedMaps = {};
-	local hasWeeklyRun = false;
-
-	for i = 1, #maps do
-		local _, level = C_MythicPlus.GetWeeklyBestForMap(maps[i]);
-		if level then hasWeeklyRun = true;
-		else level = 0; end
-		tinsert(sortedMaps, { id = maps[i], level = level });
-	end
-	table.sort(sortedMaps, function(a, b) return a.level > b.level end);
-
-	record.timeGenerated = GetServerTime();
+	local record = {}
 	record.guid = PLAYER_GUID;
 	record.name = PLAYER_NAME;
 	record.level = UnitLevel("player");
@@ -81,14 +69,33 @@ local function GetPlayerRecord()
 	record.keystoneWeekIndex = lib:GetWeeklyIndex();
 	record.bestKeystoneDungeonId = 0;
 	record.bestKeystoneLevel = 0;
-	record.keystoneDungeonId = C_MythicPlus.GetOwnedKeystoneChallengeMapID() or 0;
-	record.keystoneLevel = C_MythicPlus.GetOwnedKeystoneLevel() or 0;
-
-	if hasWeeklyRun then
-		record.bestKeystoneDungeonId = sortedMaps[1].id;
-		record.bestKeystoneLevel = C_MythicPlus.GetWeeklyChestRewardLevel();
+	local keystoneLink = lib:GetKeystoneLink();
+	if keystoneLink then
+		local _, dungeonId, level = keystoneLink:gsub('\124', '\124\124'):match(':(%d+):(%d+):(%d+):(%d+):(%d+)');
+		record.keystoneDungeonId = tonumber(dungeonId);
+		record.keystoneLevel = tonumber(level);
+	else
+		record.keystoneDungeonId = 0;
+		record.keystoneLevel = 0;
 	end
-	
+	local bestKeystoneDungeonId = 0;
+	local bestKeystoneLevel = 0;
+	local bestLevel = 0;
+
+	local weeklySortedMaps = {}
+	for i = 1, #maps do
+		local _, weeklyLevel = C_MythicPlus.GetWeeklyBestForMap(maps[i]);
+		weeklyLevel = weeklyLevel or 0;
+		tinsert(weeklySortedMaps, { id = maps[i], level = weeklyLevel });
+	end
+	table.sort(weeklySortedMaps, function(a, b) return a.level > b.level end);
+	if #weeklySortedMaps > 0 then
+		bestKeystoneLevel = weeklySortedMaps[1].level;
+		bestKeystoneDungeonId = weeklySortedMaps[1].id;
+	end
+	record.bestKeystoneLevel = bestKeystoneLevel;
+	record.bestKeystoneDungeonId = bestKeystoneDungeonId;
+	record.timeGenerated = GetServerTime();
 	return record;
 end
 
@@ -322,10 +329,10 @@ end
 
 -- Various potential Keystone update events
 EVENT_HANDLERS["BAG_UPDATE"] = scheduleUpdate();
-EVENT_HANDLERS["PLAYER_ENTERING_WORLD"] = scheduleUpdate();
-EVENT_HANDLERS["CHALLENGE_MODE_RESET"] = scheduleUpdate();
-EVENT_HANDLERS["CHALLENGE_MODE_COMPLETED"] = scheduleUpdate();
-EVENT_HANDLERS["CHALLENGE_MODE_START"] = scheduleUpdate();
+EVENT_HANDLERS["PLAYER_ENTERING_WORLD"] = scheduleUpdate()
+EVENT_HANDLERS["CHALLENGE_MODE_RESET"] = scheduleUpdate()
+EVENT_HANDLERS["CHALLENGE_MODE_COMPLETED"] = scheduleUpdate()
+EVENT_HANDLERS["CHALLENGE_MODE_START"] = scheduleUpdate()
 
 -- AddOn loaded event
 EVENT_HANDLERS["ADDON_LOADED"] = function()
