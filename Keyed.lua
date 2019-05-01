@@ -43,7 +43,7 @@ local keyedLDB = LibStub("LibDataBroker-1.1"):NewDataObject("Keyed", {
 		tt:AddLine(KEYED_LOCALE.MinimapLine1);
 		tt:AddLine(KEYED_LOCALE.MinimapLine2);
 		local keystone = KeyedLib:GetPlayerKeystone();
-		if keystone then
+		if keystone and keystone.keystoneLevel > 0 then
 			tt:AddLine(" ")
 			tt:AddLine(KEYED_LOCALE["Current Keystone"])
 			tt:AddLine("    " .. C_ChallengeMode.GetMapUIInfo(keystone.keystoneDungeonId) .. " +" .. keystone.keystoneLevel, 1, 1, 1)
