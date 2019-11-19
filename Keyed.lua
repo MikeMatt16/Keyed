@@ -179,7 +179,6 @@ eventHandlers["PLAYER_GUILD_UPDATE"] = function(self, ...)
 	playerGuild = select(1, GetGuildInfo("player"));
 	if not playerGuild then return; end
 	if not playerRealm then playerName, playerRealm = UnitFullName("player"); end
-	print(playerName .." - ".. playerRealm .." ".. playerGuild);
 
 	-- Check for guild
 	if playerGuild then
