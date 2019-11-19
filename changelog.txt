@@ -1,4 +1,4 @@
-Keyed 1.10.4 Release 1
-
-* Changed version to 1.10.4
-* Fixed TOC version
+Keyed 1.10.5 Beta 1
+	- Fixed KeyedLib bug while contacting friends.
+	- Fixed Lua error on database clean.
+	- Updated to UI version 80205

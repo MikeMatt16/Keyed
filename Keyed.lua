@@ -179,6 +179,7 @@ eventHandlers["PLAYER_GUILD_UPDATE"] = function(self, ...)
 	playerGuild = select(1, GetGuildInfo("player"));
 	if not playerGuild then return; end
 	if not playerRealm then playerName, playerRealm = UnitFullName("player"); end
+	print(playerName .." - ".. playerRealm .." ".. playerGuild);
 
 	-- Check for guild
 	if playerGuild then
@@ -298,6 +299,10 @@ function KeyedFrame_Options(input)
 			if arguments[2] == "guild" then
 				-- Wipe guild
 				table.wipe(guildDB or {});
+
+				-- Reinitialize guild database
+				guildDB[playerRealm] = guildDB[playerRealm] or {};
+				guildDB[playerRealm][playerGuild] = guildDB[playerRealm][playerGuild] or {}
 				print(keyedText, KEYED_LOCALE["Database Wiped"]);
 
 				-- Update keystone list
@@ -326,6 +331,10 @@ function KeyedFrame_Options(input)
 				table.wipe(friendsDB or {});
 				table.wipe(charactersDB or {});
 				table.wipe(groupDB or {});
+				
+				-- Reinitialize guild database
+				guildDB[playerRealm] = guildDB[playerRealm] or {};
+				guildDB[playerRealm][playerGuild] = guildDB[playerRealm][playerGuild] or {}
 				print(keyedText, KEYED_LOCALE["Database Wiped"]);
 
 				-- Update keystone list
