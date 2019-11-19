@@ -399,9 +399,9 @@ EVENT_HANDLERS["CHALLENGE_MODE_MAPS_UPDATE"] = function(...)
 				local accountInfo = C_BattleNet.GetFriendAccountInfo(i);
 				if accountInfo.gameAccountInfo.clientProgram == BNET_CLIENT_WOW and CanCooperateWithGameAccount(accountInfo) then
 					if friendsSynced then
-						SendKeystone(1, playerKeystone, "BNET", accountInfo.gameAccountInfo.gameAccountID);
+						SendKeystone(1, playerKeystone, "BNET", accountInfo.bnetAccountId);
 					else
-						SendAllKeystones(1, "BNET", accountInfo.gameAccountInfo.gameAccountID);
+						SendAllKeystones(1, "BNET", accountInfo.bnetAccountId);
 					end
 				end
 			end
