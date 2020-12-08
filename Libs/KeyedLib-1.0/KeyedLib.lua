@@ -118,7 +118,7 @@ local function RefreshPlayerKeystone()
 end
 
 local function SendKeystone(requestSync, keystone, channel, target)
-	if keystone then
+	if keystone and channel and target then
 		local msgArray = {};
 		msgArray[1] = requestSync;
 		msgArray[2] = keystone.guid or "";
@@ -381,7 +381,7 @@ EVENT_HANDLERS["CHALLENGE_MODE_MAPS_UPDATE"] = function(...)
 	-- Syncronize with friends?
 	if isNew or not(friendsSynced) then
 		debug("Friends sync...")
-		for i = 1, select(2, GetNumFriends()) do
+		for i = 1, C_FriendList.GetNumFriends() do
 			local fullName = select(1, GetFriendInfo(i));
 			if not(string.match(fullName, "-")) then
 				fullName = fullName .. "-" .. PLAYER_REALM;
